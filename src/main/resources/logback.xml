@@ -5,11 +5,11 @@
         </encoder>
     </appender>
 
-    <logger name="com.company.artistmgmt.repository.AccountRepoImpl" level="DEBUG" additivity="false">
-        <appender-ref ref="CONSOLE" />
+    <logger name="com.company.artistmgmt" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE"/>
     </logger>
 
     <root level="INFO">
-        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="CONSOLE"/>
     </root>
 </configuration>

@@ -1,6 +1,5 @@
 package com.company.artistmgmt.repository;
 
-import com.company.artistmgmt.config.DBConnection;
 import com.company.artistmgmt.config.DBResultSet;
 import com.company.artistmgmt.exception.RepoException;
 import com.company.artistmgmt.exception.RepoRuntimeException;
@@ -10,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
+import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -18,11 +18,11 @@ import java.util.List;
 public class AccountRepoImpl implements AccountRepo {
     private static final Logger logger = LoggerFactory.getLogger(AccountRepoImpl.class);
     private static final String QUERY = "Query:{}";
-    private final DBConnection dataSource;
+    private final DataSource dataSource;
 
     private final DBResultSet resultSet;
 
-    public AccountRepoImpl(@Qualifier("datasource") DBConnection dataSource, @Qualifier("resultSet") DBResultSet resultSet) {
+    public AccountRepoImpl(DataSource dataSource, @Qualifier("resultSet") DBResultSet resultSet) {
         this.dataSource = dataSource;
         this.resultSet = resultSet;
     }
