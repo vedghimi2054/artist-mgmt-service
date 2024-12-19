@@ -34,7 +34,8 @@ dependencies {
     implementation group: 'com.google.guava', name: 'guava', version: '11.0.2'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
-
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
+//    implementation 'org.springframework.boot:spring-boot-starter-security'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     implementation 'ch.qos.logback:logback-classic:1.4.11'
     implementation 'org.slf4j:slf4j-api:2.0.9'

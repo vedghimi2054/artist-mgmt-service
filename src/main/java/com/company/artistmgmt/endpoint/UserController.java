@@ -1,7 +1,8 @@
-package com.example.artistmanagement.controller;
+package com.company.artistmgmt.endpoint;
 
 import com.company.artistmgmt.dto.UserDto;
-import com.company.artistmgmt.model.general.Role;
+import com.company.artistmgmt.exception.ArtistException;
+import com.company.artistmgmt.model.BaseResponse;
 import com.company.artistmgmt.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,12 +29,20 @@ public class UserController {
      * @return paginated list of users
      */
     @GetMapping
-    public ResponseEntity<List<UserDto>> listUsers(
+    public ResponseEntity<BaseResponse<List<UserDto>>> listUsers(
             @RequestParam(defaultValue = "0") int pageNo,
-            @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam(required = false) Role roleFilter) {
-        List<UserDto> users = userService.getAllUsers(pageNo, pageSize, roleFilter);
-        return ResponseEntity.ok(users);
+            @RequestParam(defaultValue = "10") int pageSize) {
+        try {
+            BaseResponse<List<UserDto>> users = userService.getAllUsers(pageNo, pageSize);
+            return ResponseEntity.ok(users);
+        } catch (ArtistException ex) {
+            BaseResponse<List<UserDto>> errorResponse = new BaseResponse<>(
+                    HttpStatus.BAD_REQUEST.value(),  // Error status code
+                    ex.getMessage()                   // Error message
+            );
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
+
     }
 
     /**
@@ -43,9 +52,17 @@ public class UserController {
      * @return the created user
      */
     @PostMapping
-    public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserDto userDto) {
-        UserDto createdUser = userService.createUser(userDto);
-        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+    public ResponseEntity<BaseResponse<UserDto>> createUser(@Valid @RequestBody UserDto userDto) {
+        try {
+            BaseResponse<UserDto> createdUser = userService.createUser(userDto);
+            return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+        } catch (ArtistException ex) {
+            BaseResponse<UserDto> errorResponse = new BaseResponse<>(
+                    HttpStatus.BAD_REQUEST.value(),  // Error status code
+                    ex.getMessage()                   // Error message
+            );
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
     }
 
     /**
@@ -56,9 +73,18 @@ public class UserController {
      * @return the updated user
      */
     @PutMapping("/{id}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable int id, @Valid @RequestBody UserDto userDto) {
-        UserDto updatedUser = userService.updateUser(id, userDto);
-        return ResponseEntity.ok(updatedUser);
+    public ResponseEntity<BaseResponse<UserDto>> updateUser(@PathVariable int id, @Valid @RequestBody UserDto userDto) {
+        try {
+            BaseResponse<UserDto> updatedUser = userService.updateUser(id, userDto);
+            return ResponseEntity.ok(updatedUser);
+        } catch (ArtistException ex) {
+            BaseResponse<UserDto> errorResponse = new BaseResponse<>(
+                    HttpStatus.BAD_REQUEST.value(),  // Error status code
+                    ex.getMessage()                   // Error message
+            );
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
+
     }
 
     /**
@@ -68,9 +94,19 @@ public class UserController {
      * @return a success response
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable int id) {
-        userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<BaseResponse<Integer>> deleteUser(@PathVariable int id) {
+        try {
+            BaseResponse<Integer> deletedId = userService.deleteUser(id);
+            return ResponseEntity.ok(deletedId);
+
+        } catch (ArtistException ex) {
+            BaseResponse<Integer> errorResponse = new BaseResponse<>(
+                    HttpStatus.BAD_REQUEST.value(),  // Error status code
+                    ex.getMessage()                   // Error message
+            );
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
+
     }
 
     /**
@@ -80,8 +116,17 @@ public class UserController {
      * @return the user details
      */
     @GetMapping("/{id}")
-    public ResponseEntity<UserDto> getUserById(@PathVariable int id) {
-        UserDto user = userService.getUserById(id);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<BaseResponse<UserDto>> getUserById(@PathVariable int id) {
+        try {
+            BaseResponse<UserDto> user = userService.getUserById(id);
+            return ResponseEntity.ok(user);
+        } catch (ArtistException ex) {
+            BaseResponse<UserDto> errorResponse = new BaseResponse<>(
+                    HttpStatus.BAD_REQUEST.value(),  // Error status code
+                    ex.getMessage()                   // Error message
+            );
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
+
     }
 }

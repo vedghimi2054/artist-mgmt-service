@@ -14,6 +14,4 @@ public class Music {
     private Genre genre; // Assuming `Genre` is another enum
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-    // Getters and Setters
 }

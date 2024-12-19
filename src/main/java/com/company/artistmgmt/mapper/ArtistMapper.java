@@ -2,6 +2,7 @@ package com.company.artistmgmt.mapper;
 
 import com.company.artistmgmt.dto.ArtistDto;
 import com.company.artistmgmt.model.Artist;
+import com.company.artistmgmt.model.general.Gender;
 
 public class ArtistMapper {
     public static ArtistDto toArtistDto(Artist artist) {
@@ -18,10 +19,9 @@ public class ArtistMapper {
 
     public static Artist toArtistEntity(ArtistDto dto) {
         Artist artist = new Artist();
-        artist.setId(dto.getId());
         artist.setName(dto.getName());
         artist.setDob(dto.getDob());
-        artist.setGender(dto.getGender());
+        artist.setGender(Gender.fromValue(dto.getGender().getValue()));
         artist.setAddress(dto.getAddress());
         artist.setFirstReleaseYear(dto.getFirstReleaseYear());
         artist.setNoOfAlbumsReleased(dto.getNoOfAlbumsReleased());

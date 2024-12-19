@@ -1,25 +1,25 @@
 package com.company.artistmgmt.model.general;
 
 public enum Genre {
-    MB("mb"),
-    COUNTRY("country"),
-    CLASSIC("classic"),
-    ROCK("rock"),
-    JAZZ("jazz");
+    MB(1),
+    COUNTRY(2),
+    CLASSIC(3),
+    ROCK(4),
+    JAZZ(5);
 
-    private final String value;
+    private final int value;
 
-    Genre(String value) {
+    Genre(int value) {
         this.value = value;
     }
 
-    public String getValue() {
+    public int getValue() {
         return value;
     }
 
-    public static Genre fromValue(String value) {
+    public static Genre fromValue(int value) {
         for (Genre genre : Genre.values()) {
-            if (genre.getValue().equalsIgnoreCase(value)) {
+            if (genre.getValue() == value) {
                 return genre;
             }
         }

@@ -1,41 +1,47 @@
 package com.company.artistmgmt.service;
 
 import com.company.artistmgmt.dto.UserDto;
+import com.company.artistmgmt.exception.ArtistException;
+import com.company.artistmgmt.exception.FailedException;
 import com.company.artistmgmt.exception.ResourceNotFoundException;
 import com.company.artistmgmt.exception.ValidationException;
+import com.company.artistmgmt.mapper.UserMapper;
+import com.company.artistmgmt.model.BaseResponse;
+import com.company.artistmgmt.model.User;
+import com.company.artistmgmt.model.general.Gender;
 import com.company.artistmgmt.model.general.Role;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.company.artistmgmt.repository.UserRepo;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.company.artistmgmt.mapper.UserMapper.toUserDto;
+import static com.company.artistmgmt.mapper.UserMapper.toUserEntity;
 
 @Service
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepo userRepository;
 
-    @Override
-    public List<UserDto> getAllUsers(int pageNo, int pageSize, Role roleFilter) {
-        validatePagination(pageNo, pageSize);
-        return userRepository.getAllUsers(pageNo, pageSize, roleFilter);
+    public UserServiceImpl(UserRepo userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Override
-    public UserDto getUserById(int id) {
-        validateId(id);
-        return userRepository.getUserById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User with ID " + id + " not found"));
-    }
-
-    @Override
-    public UserDto createUser(UserDto userDto) {
+    public BaseResponse<UserDto> createUser(UserDto userDto) throws ArtistException {
         validateUserDto(userDto);
-        userRepository.createUser(userDto);
+        User userEntity = toUserEntity(userDto);
+        if (!userRepository.createUser(userEntity)) {
+            throw new FailedException("Failed to create user.");
+        }
+        User userById = userRepository.getUserById(userEntity.getId());
+        UserDto userDto1 = toUserDto(userById);
+        return new BaseResponse<>(true, userDto1);
     }
 
     @Override
-    public UserDto updateUser(int id, UserDto userDto) {
+    public BaseResponse<UserDto> updateUser(int id, UserDto userDto) throws ArtistException {
         validateId(id);
 
         if (!userRepository.existsById(id)) {
@@ -43,18 +49,45 @@ public class UserServiceImpl implements UserService {
         }
 
         validateUserDto(userDto);
-        userRepository.updateUser(id, userDto);
+        User userEntity = toUserEntity(userDto);
+        if (!userRepository.updateUser(id, userEntity)) {
+            throw new FailedException("Failed to update user.");
+        }
+        User userById = userRepository.getUserById(id);
+        UserDto userDto1 = toUserDto(userById);
+        return new BaseResponse<>(true, userDto1);
+
     }
 
     @Override
-    public void deleteUser(int id) {
-        validateId(id);
+    public BaseResponse<Integer> deleteUser(int userId) throws ArtistException {
+        validateId(userId);
 
+        if (!userRepository.existsById(userId)) {
+            throw new ResourceNotFoundException("User with ID " + userId + " not found");
+        }
+        if (!userRepository.deleteUser(userId)) {
+            throw new FailedException("Failed to update user.");
+        }
+        return new BaseResponse<>(true, userId);
+    }
+
+    @Override
+    public BaseResponse<List<UserDto>> getAllUsers(int pageNo, int pageSize) throws ArtistException {
+        List<User> allUsers = userRepository.getAllUsers(pageNo, pageSize);
+        List<UserDto> collect = allUsers.stream().map(UserMapper::toUserDto).collect(Collectors.toList());
+        return new BaseResponse<>(true, collect);
+    }
+
+    @Override
+    public BaseResponse<UserDto> getUserById(int id) throws ArtistException {
+        validateId(id);
         if (!userRepository.existsById(id)) {
             throw new ResourceNotFoundException("User with ID " + id + " not found");
         }
-
-        userRepository.deleteUser(id);
+        User userById = userRepository.getUserById(id);
+        UserDto userDto = toUserDto(userById);
+        return new BaseResponse<>(true, userDto);
     }
 
     /**
@@ -63,18 +96,6 @@ public class UserServiceImpl implements UserService {
     private void validateId(int id) {
         if (id <= 0) {
             throw new ValidationException("Invalid user ID");
-        }
-    }
-
-    /**
-     * Validates pagination parameters.
-     */
-    private void validatePagination(int pageNo, int pageSize) {
-        if (pageNo < 0) {
-            throw new ValidationException("Page number cannot be negative");
-        }
-        if (pageSize <= 0) {
-            throw new ValidationException("Page size must be greater than zero");
         }
     }
 
