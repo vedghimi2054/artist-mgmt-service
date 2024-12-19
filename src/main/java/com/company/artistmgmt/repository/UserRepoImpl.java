@@ -35,7 +35,7 @@ public class UserRepoImpl implements UserRepo {
 
     @Override
     public List<User> getAllUsers(int pageNo, int pageSize) throws ArtistException {
-        logger.debug("Getting all users:");
+        logger.debug("Getting all users:{}", pageNo);
         var query = "SELECT * FROM user ORDER BY created_at DESC LIMIT ? OFFSET ?";
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
@@ -79,7 +79,7 @@ public class UserRepoImpl implements UserRepo {
 
     @Override
     public boolean existsById(int id) throws ArtistException {
-        logger.debug("Getting User by id:");
+        logger.debug("Getting User by id:{}", id);
         var query = SELECT + "COUNT(id)" + FROM + USER_TABLE + WHERE + " id = ?";
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
@@ -150,7 +150,7 @@ public class UserRepoImpl implements UserRepo {
 
     @Override
     public User getUserById(int id) throws ArtistException {
-        logger.debug("Getting User by id:");
+        logger.debug("Getting User by id:{}", id);
         var query = SELECT + USER_FETCH_COLUMN_QUERY + WHERE + " id = ?";
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {

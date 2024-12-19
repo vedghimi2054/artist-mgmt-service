@@ -5,6 +5,8 @@ import com.company.artistmgmt.exception.ArtistException;
 import com.company.artistmgmt.exception.ArtistRuntimeException;
 import com.company.artistmgmt.model.Music;
 import com.company.artistmgmt.model.general.Genre;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
@@ -14,6 +16,7 @@ import java.util.List;
 
 @Repository
 public class MusicRepoImpl implements MusicRepo {
+    private static final Logger logger = LoggerFactory.getLogger(MusicRepoImpl.class);
 
     private final DataSource dataSource;
     private final DBResultSet resultSet;
@@ -25,6 +28,7 @@ public class MusicRepoImpl implements MusicRepo {
 
     @Override
     public boolean createSongForArtist(int artistId, Music musicEntity) throws ArtistException {
+        logger.debug("Creating songs for artist id:{} with: Payload:{}", artistId, musicEntity);
         String query = "INSERT INTO `music` (title, artist_id, album_name, genre) VALUES (?, ?, ?, ?)";
 
         try (Connection connection = dataSource.getConnection();
@@ -43,6 +47,7 @@ public class MusicRepoImpl implements MusicRepo {
 
     @Override
     public boolean updateSongForArtist(int artistId, int id, Music musicEntity) throws ArtistException {
+        logger.debug("Updating songs for artist id:{} and musicId:{} with: Payload:{}", artistId, id, musicEntity);
         String query = "UPDATE `music` SET title = ?, album_name = ?, genre = ? WHERE id = ? AND artist_id = ?";
 
         try (Connection connection = dataSource.getConnection();
@@ -61,6 +66,7 @@ public class MusicRepoImpl implements MusicRepo {
 
     @Override
     public boolean deleteSongForArtist(int artistId, int id) throws ArtistException {
+        logger.debug("Deleting songs for artist id:{} and musicId:{}", artistId, id);
         String query = "DELETE FROM `music` WHERE id = ? AND artist_id = ?";
 
         try (Connection connection = dataSource.getConnection();
@@ -75,6 +81,7 @@ public class MusicRepoImpl implements MusicRepo {
 
     @Override
     public List<Music> getSongsByArtist(int artistId, int pageNo, int pageSize) throws ArtistException {
+        logger.debug("Getting songs by artist with: Payload:{}", artistId);
         String query = "SELECT * FROM music WHERE artist_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
 
         try (Connection connection = dataSource.getConnection();
@@ -90,6 +97,7 @@ public class MusicRepoImpl implements MusicRepo {
 
     @Override
     public Music getSongById(int id, int artistId) throws ArtistException {
+        logger.debug("Getting song by id:{} and artistId:{}", id, artistId);
         String query = "SELECT * FROM music WHERE id = ? AND artist_id = ?";
 
         try (Connection connection = dataSource.getConnection();
@@ -104,6 +112,7 @@ public class MusicRepoImpl implements MusicRepo {
 
     @Override
     public boolean checkMusicExistsById(int id, int artistId) throws ArtistException {
+        logger.debug("Checking music exists with id:{} for artistId:{}", id, artistId);
         String query = "SELECT COUNT(id) FROM music WHERE id = ? AND artist_id = ?";
 
         try (Connection connection = dataSource.getConnection();

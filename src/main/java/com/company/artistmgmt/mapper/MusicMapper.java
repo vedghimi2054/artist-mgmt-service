@@ -11,6 +11,8 @@ public class MusicMapper {
         dto.setTitle(music.getTitle());
         dto.setAlbumName(music.getAlbumName());
         dto.setGenre(music.getGenre());
+        dto.setCreatedAt(music.getCreatedAt());
+        dto.setUpdatedAt(music.getUpdatedAt());
         return dto;
     }
 

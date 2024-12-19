@@ -14,11 +14,14 @@ public class ArtistMapper {
         dto.setAddress(artist.getAddress());
         dto.setFirstReleaseYear(artist.getFirstReleaseYear());
         dto.setNoOfAlbumsReleased(artist.getNoOfAlbumsReleased());
+        dto.setCreatedAt(artist.getCreatedAt());
+        dto.setUpdatedAt(artist.getUpdatedAt());
         return dto;
     }
 
     public static Artist toArtistEntity(ArtistDto dto) {
         Artist artist = new Artist();
+        artist.setId(dto.getId());
         artist.setName(dto.getName());
         artist.setDob(dto.getDob());
         artist.setGender(Gender.fromValue(dto.getGender().getValue()));

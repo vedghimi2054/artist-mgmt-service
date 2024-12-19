@@ -1,5 +1,6 @@
 package com.company.artistmgmt.model.general;
 
+import com.company.artistmgmt.exception.ArtistRuntimeException;
 import lombok.Getter;
 
 @Getter
@@ -29,7 +30,6 @@ public enum Gender {
             return false;
         }
     }
-
     public static Gender fromValue(int value) {
         for (Gender gender : Gender.values()) {
             if (gender.getValue() == value) {
@@ -37,15 +37,5 @@ public enum Gender {
             }
         }
         throw new IllegalArgumentException("Invalid Gender value: " + value);
-    }
-
-    public static Gender parseGender(int genderInt) {
-
-        return switch (genderInt) {
-            case 1 -> MALE;
-            case 2 -> FEMALE;
-            case 3 -> OTHER;
-            default -> throw new IllegalArgumentException("Invalid gender value: " + genderInt);
-        };
     }
 }

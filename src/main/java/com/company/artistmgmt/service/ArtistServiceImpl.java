@@ -8,6 +8,7 @@ import com.company.artistmgmt.exception.ValidationException;
 import com.company.artistmgmt.mapper.ArtistMapper;
 import com.company.artistmgmt.model.Artist;
 import com.company.artistmgmt.model.BaseResponse;
+import com.company.artistmgmt.model.general.Gender;
 import com.company.artistmgmt.repository.ArtistRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,6 +111,31 @@ public class ArtistServiceImpl implements ArtistService {
      * Validates the ArtistDto object.
      */
     private void validateArtistDto(ArtistDto artistDto) {
+        if (artistDto.getName() == null || artistDto.getName().trim().isEmpty()) {
+            throw new ValidationException("Name cannot be empty.");
+        }
 
+        // Check if 'dob' is not null
+        if (artistDto.getDob() == null) {
+            throw new ValidationException("Date of birth cannot be null.");
+        }
+
+        // Check if 'address' is not null or empty
+        if (artistDto.getAddress() == null || artistDto.getAddress().trim().isEmpty()) {
+            throw new ValidationException("Address cannot be empty.");
+        }
+
+        // Check if 'firstReleaseYear' is not negative or zero
+        if (artistDto.getFirstReleaseYear() <= 0) {
+            throw new ValidationException("First release year must be greater than zero.");
+        }
+
+        // Check if 'noOfAlbumsReleased' is not negative
+        if (artistDto.getNoOfAlbumsReleased() < 0) {
+            throw new ValidationException("Number of albums released cannot be negative.");
+        }
+        if (artistDto.getGender() != null && !Gender.isValid(artistDto.getGender().name())) {
+            throw new ValidationException("Invalid gender value");
+        }
     }
 }

@@ -11,6 +11,8 @@ import com.company.artistmgmt.model.User;
 import com.company.artistmgmt.model.general.Gender;
 import com.company.artistmgmt.model.general.Role;
 import com.company.artistmgmt.repository.UserRepo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,6 +23,7 @@ import static com.company.artistmgmt.mapper.UserMapper.toUserEntity;
 
 @Service
 public class UserServiceImpl implements UserService {
+    private static final Logger logger = LoggerFactory.getLogger(MusicServiceImpl.class);
 
     private final UserRepo userRepository;
 
@@ -30,6 +33,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public BaseResponse<UserDto> createUser(UserDto userDto) throws ArtistException {
+        logger.debug("Creating user with Payload:{}", userDto);
         validateUserDto(userDto);
         User userEntity = toUserEntity(userDto);
         if (!userRepository.createUser(userEntity)) {
@@ -42,6 +46,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public BaseResponse<UserDto> updateUser(int id, UserDto userDto) throws ArtistException {
+        logger.debug("Updating user with id:{} and Payload:{}", id, userDto);
         validateId(id);
 
         if (!userRepository.existsById(id)) {
@@ -61,6 +66,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public BaseResponse<Integer> deleteUser(int userId) throws ArtistException {
+        logger.debug("Deleting user with id:{}", userId);
         validateId(userId);
 
         if (!userRepository.existsById(userId)) {
@@ -74,6 +80,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public BaseResponse<List<UserDto>> getAllUsers(int pageNo, int pageSize) throws ArtistException {
+        logger.debug("Getting all user Payload:{}", pageNo);
         List<User> allUsers = userRepository.getAllUsers(pageNo, pageSize);
         List<UserDto> collect = allUsers.stream().map(UserMapper::toUserDto).collect(Collectors.toList());
         return new BaseResponse<>(true, collect);
@@ -81,6 +88,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public BaseResponse<UserDto> getUserById(int id) throws ArtistException {
+        logger.debug("Getting user with id:{}", id);
         validateId(id);
         if (!userRepository.existsById(id)) {
             throw new ResourceNotFoundException("User with ID " + id + " not found");
