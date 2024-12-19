@@ -4,6 +4,7 @@ import com.company.artistmgmt.dto.ArtistDto;
 import com.company.artistmgmt.exception.ArtistException;
 import com.company.artistmgmt.model.BaseResponse;
 
+import java.io.PrintWriter;
 import java.util.List;
 
 public interface ArtistService {
@@ -47,4 +48,5 @@ public interface ArtistService {
      */
     BaseResponse<Integer> deleteArtist(int id) throws ArtistException;
 
+    void exportArtistsToCsv(PrintWriter writer) throws ArtistException;
 }

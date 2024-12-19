@@ -145,7 +145,7 @@ public class ArtistRepoImpl implements ArtistRepo {
              var statement = connection.prepareStatement(query)) {
             logger.debug(QUERY, query);
             statement.setInt(1, pageSize);
-            statement.setInt(2, pageNo * pageSize);
+            statement.setInt(2, pageNo);
             return resultSet.getResults(statement.executeQuery(), this::extractArtistInfo);
         } catch (SQLException e) {
             throw new ArtistException(e);

@@ -10,10 +10,14 @@ import com.company.artistmgmt.model.Artist;
 import com.company.artistmgmt.model.BaseResponse;
 import com.company.artistmgmt.model.general.Gender;
 import com.company.artistmgmt.repository.ArtistRepo;
+import com.opencsv.CSVWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -94,6 +98,34 @@ public class ArtistServiceImpl implements ArtistService {
         Artist artistById = artistRepo.getArtistById(id);
         ArtistDto artistDto = toArtistDto(artistById);
         return new BaseResponse<>(true, artistDto);
+    }
+
+    @Override
+    public void exportArtistsToCsv(PrintWriter writer) throws ArtistException {
+        logger.debug("Exporting artists to csv");
+        List<Artist> artists = artistRepo.getAllArtists(0, 10);
+
+        try (CSVWriter csvWriter = new CSVWriter(writer)) {
+            // Write header
+            String[] header = {"ID", "Name", "DOB", "Gender", "Address", "First Release Year", "No of Albums Released"};
+            csvWriter.writeNext(header);
+
+            // Write data
+            for (Artist artist : artists) {
+                String[] data = {
+                        String.valueOf(artist.getId()),
+                        artist.getName(),
+                        String.valueOf(artist.getDob()),
+                        String.valueOf(artist.getGender().getValue()),
+                        artist.getAddress(),
+                        String.valueOf(artist.getFirstReleaseYear()),
+                        String.valueOf(artist.getNoOfAlbumsReleased())
+                };
+                csvWriter.writeNext(data);
+            }
+        } catch (IOException e) {
+            throw new ArtistException("Failed to export csv.", e);
+        }
     }
 
     /**

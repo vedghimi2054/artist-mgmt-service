@@ -5,12 +5,14 @@ import com.company.artistmgmt.dto.ArtistDto;
 import com.company.artistmgmt.exception.ArtistException;
 import com.company.artistmgmt.model.BaseResponse;
 import com.company.artistmgmt.service.ArtistService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -132,6 +134,24 @@ public class ArtistController {
             );
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
 
+        }
+    }
+
+    // Export artists to CSV
+    @GetMapping("/export")
+    public ResponseEntity<BaseResponse<String>> exportToCsv(HttpServletResponse response) throws IOException {
+        response.setContentType("text/csv");
+        String headerKey = "Content-Disposition";
+        String headerValue = "attachment; filename=artists.csv";
+        response.setHeader(headerKey, headerValue);
+        try {
+            artistService.exportArtistsToCsv(response.getWriter());
+        } catch (ArtistException e) {
+            BaseResponse<String> errorResponse = new BaseResponse<>(
+                    HttpStatus.BAD_REQUEST.value(),  // Error status code
+                    e.getMessage()                   // Error message
+            );
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
     }
 }
