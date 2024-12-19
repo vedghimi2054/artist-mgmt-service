@@ -21,7 +21,6 @@ public class ArtistMapper {
 
     public static Artist toArtistEntity(ArtistDto dto) {
         Artist artist = new Artist();
-        artist.setId(dto.getId());
         artist.setName(dto.getName());
         artist.setDob(dto.getDob());
         artist.setGender(Gender.fromValue(dto.getGender().getValue()));

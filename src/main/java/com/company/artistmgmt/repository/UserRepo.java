@@ -8,7 +8,7 @@ import java.util.List;
 public interface UserRepo {
     List<User> getAllUsers(int pageNo, int pageSize) throws ArtistException;
 
-    boolean createUser(User userEntity);
+    User createUser(User userEntity) throws ArtistException;
 
     boolean existsById(int id) throws ArtistException;
 

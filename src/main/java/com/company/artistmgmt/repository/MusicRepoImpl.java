@@ -3,6 +3,7 @@ package com.company.artistmgmt.repository;
 import com.company.artistmgmt.config.DBResultSet;
 import com.company.artistmgmt.exception.ArtistException;
 import com.company.artistmgmt.exception.ArtistRuntimeException;
+import com.company.artistmgmt.exception.FailedException;
 import com.company.artistmgmt.model.Music;
 import com.company.artistmgmt.model.general.Genre;
 import org.slf4j.Logger;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Repository;
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.List;
+
+import static com.company.artistmgmt.repository.QueryConst.QUERY;
 
 @Repository
 public class MusicRepoImpl implements MusicRepo {
@@ -27,21 +30,33 @@ public class MusicRepoImpl implements MusicRepo {
     }
 
     @Override
-    public boolean createSongForArtist(int artistId, Music musicEntity) throws ArtistException {
+    public Music createSongForArtist(int artistId, Music musicEntity) throws ArtistException {
         logger.debug("Creating songs for artist id:{} with: Payload:{}", artistId, musicEntity);
         String query = "INSERT INTO `music` (title, artist_id, album_name, genre) VALUES (?, ?, ?, ?)";
 
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+             PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+            logger.debug(QUERY, query);
             statement.setString(1, musicEntity.getTitle());
             statement.setInt(2, artistId);
             statement.setString(3, musicEntity.getAlbumName());
             statement.setInt(4, musicEntity.getGenre().getValue());
-
-            return statement.executeUpdate() == 1;
+            int rowsAffected = statement.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new FailedException("Failed to create songs for artist.");
+            }
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    int generatedId = generatedKeys.getInt(1);
+                    musicEntity.setId(generatedId);
+                } else {
+                    throw new FailedException("Failed to retrieve generated ID for artist.");
+                }
+            }
         } catch (SQLException e) {
             throw new ArtistException("Error while creating song for artist.", e);
         }
+        return musicEntity;
     }
 
 
@@ -52,6 +67,7 @@ public class MusicRepoImpl implements MusicRepo {
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
+            logger.debug(QUERY, query);
             statement.setString(1, musicEntity.getTitle());
             statement.setString(2, musicEntity.getAlbumName());
             statement.setInt(3, musicEntity.getGenre().getValue());
@@ -71,6 +87,7 @@ public class MusicRepoImpl implements MusicRepo {
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
+            logger.debug(QUERY, query);
             statement.setInt(1, id);
             statement.setInt(2, artistId);
             return statement.executeUpdate() == 1;
@@ -86,9 +103,10 @@ public class MusicRepoImpl implements MusicRepo {
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
+            logger.debug(QUERY, query);
             statement.setInt(1, artistId);
             statement.setInt(2, pageSize);
-            statement.setInt(3, pageNo * pageSize);
+            statement.setInt(3, pageNo);
             return resultSet.getResults(statement.executeQuery(), this::extractMusicInfo);
         } catch (SQLException e) {
             throw new ArtistException("Error while fetching songs for artist.", e);
@@ -102,6 +120,7 @@ public class MusicRepoImpl implements MusicRepo {
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
+            logger.debug(QUERY, query);
             statement.setInt(1, id);
             statement.setInt(2, artistId);
             return resultSet.getResult(statement.executeQuery(), this::extractMusicInfo);
@@ -117,9 +136,10 @@ public class MusicRepoImpl implements MusicRepo {
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
+            logger.debug(QUERY, query);
             statement.setInt(1, id);
             statement.setInt(2, artistId);
-            return resultSet.count(statement.executeQuery()) <= 0;
+            return resultSet.count(statement.executeQuery()) > 0;
         } catch (SQLException e) {
             throw new ArtistException("Error while fetching song by ID.", e);
         }

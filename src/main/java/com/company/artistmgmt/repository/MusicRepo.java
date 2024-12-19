@@ -8,7 +8,7 @@ import java.util.List;
 public interface MusicRepo {
     List<Music> getSongsByArtist(int artistId, int pageNo, int pageSize) throws ArtistException;
 
-    boolean createSongForArtist(int artistId, Music musicEntity) throws ArtistException;
+    Music createSongForArtist(int artistId, Music musicEntity) throws ArtistException;
 
     boolean checkMusicExistsById(int id, int artistId) throws ArtistException;
 

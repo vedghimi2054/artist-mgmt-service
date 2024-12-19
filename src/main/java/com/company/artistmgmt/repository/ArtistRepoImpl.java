@@ -3,6 +3,7 @@ package com.company.artistmgmt.repository;
 import com.company.artistmgmt.config.DBResultSet;
 import com.company.artistmgmt.exception.ArtistException;
 import com.company.artistmgmt.exception.ArtistRuntimeException;
+import com.company.artistmgmt.exception.FailedException;
 import com.company.artistmgmt.model.Artist;
 import com.company.artistmgmt.model.general.Gender;
 import com.company.artistmgmt.util.StringUtils;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -32,14 +34,14 @@ public class ArtistRepoImpl implements ArtistRepo {
     }
 
     @Override
-    public boolean createArtist(Artist artistEntity) {
+    public Artist createArtist(Artist artistEntity) throws ArtistException {
         logger.debug("Creating Artist:{}", artistEntity);
         var query = "INSERT INTO `artist` (name, dob, gender, address, first_release_year, no_of_albums_released) " +
                 "VALUES (?, ?, ?, ?, ?, ?);";
 
         try (var connection = dataSource.getConnection();
-             var statement = connection.prepareStatement(query)) {
-            logger.debug("Executing query: {}", query);
+             var statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+            logger.debug(QUERY, query);
 
             var i = 0;
             statement.setString(++i, artistEntity.getName());
@@ -49,11 +51,23 @@ public class ArtistRepoImpl implements ArtistRepo {
             statement.setString(++i, artistEntity.getAddress());
             statement.setInt(++i, artistEntity.getFirstReleaseYear());
             statement.setInt(++i, artistEntity.getNoOfAlbumsReleased());
-            return statement.executeUpdate() == 1;
+            int rowsAffected = statement.executeUpdate();
+
+            if (rowsAffected == 0) {
+                throw new FailedException("Failed to create artist.");
+            }
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    int generatedId = generatedKeys.getInt(1);
+                    artistEntity.setId(generatedId);
+                } else {
+                    throw new FailedException("Failed to retrieve generated ID for artist.");
+                }
+            }
         } catch (SQLException e) {
-            logger.error("Error while creating artist.", e);
-            return false;
+            throw new ArtistException("Error while create artist.", e);
         }
+        return artistEntity;
     }
 
     @Override
@@ -131,7 +145,7 @@ public class ArtistRepoImpl implements ArtistRepo {
              var statement = connection.prepareStatement(query)) {
             logger.debug(QUERY, query);
             statement.setInt(1, pageSize);
-            statement.setInt(2, pageNo);
+            statement.setInt(2, pageNo * pageSize);
             return resultSet.getResults(statement.executeQuery(), this::extractArtistInfo);
         } catch (SQLException e) {
             throw new ArtistException(e);

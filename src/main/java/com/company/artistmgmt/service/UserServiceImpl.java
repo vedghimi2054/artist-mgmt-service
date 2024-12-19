@@ -36,10 +36,9 @@ public class UserServiceImpl implements UserService {
         logger.debug("Creating user with Payload:{}", userDto);
         validateUserDto(userDto);
         User userEntity = toUserEntity(userDto);
-        if (!userRepository.createUser(userEntity)) {
-            throw new FailedException("Failed to create user.");
-        }
-        User userById = userRepository.getUserById(userEntity.getId());
+        User user = userRepository.createUser(userEntity);
+
+        User userById = userRepository.getUserById(user.getId());
         UserDto userDto1 = toUserDto(userById);
         return new BaseResponse<>(true, userDto1);
     }

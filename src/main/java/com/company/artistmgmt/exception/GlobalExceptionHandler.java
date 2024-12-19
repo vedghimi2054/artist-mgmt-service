@@ -3,6 +3,7 @@ package com.company.artistmgmt.exception;
 import com.company.artistmgmt.model.BaseResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -57,6 +58,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
+    // Handle invalid request body parsing (malformed JSON or missing fields)
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<BaseResponse<String>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        BaseResponse<String> errorResponse = new BaseResponse<>(
+                HttpStatus.BAD_REQUEST.value(),
+                "Failed to parse request body. Please check the input format." + ex.getMessage()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<BaseResponse<String>> handleGenericExceptions(Exception ex) {

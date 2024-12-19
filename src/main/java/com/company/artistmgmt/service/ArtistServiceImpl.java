@@ -36,11 +36,9 @@ public class ArtistServiceImpl implements ArtistService {
         logger.debug("Creating artist with: Payload:{}", artistDto);
         validateArtistDto(artistDto);
         Artist artistEntity = toArtistEntity(artistDto);
-        if (!artistRepo.createArtist(artistEntity)) {
-            throw new FailedException("Failed to create artist.");
-        }
-        logger.debug("After insert:{}", artistEntity);
-        Artist artistById = artistRepo.getArtistById(artistEntity.getId());
+        Artist artist = artistRepo.createArtist(artistEntity);
+        logger.debug("After insert:{}", artist);
+        Artist artistById = artistRepo.getArtistById(artist.getId());
         ArtistDto dto = toArtistDto(artistById);
         return new BaseResponse<>(true, dto);
     }

@@ -18,7 +18,6 @@ public class MusicMapper {
 
     public static Music toMusicEntity(MusicDto dto) {
         Music music = new Music();
-        music.setId(dto.getId());
         music.setArtistId(dto.getArtistId());
         music.setTitle(dto.getTitle());
         music.setAlbumName(dto.getAlbumName());

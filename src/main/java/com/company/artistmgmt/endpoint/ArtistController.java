@@ -5,7 +5,6 @@ import com.company.artistmgmt.dto.ArtistDto;
 import com.company.artistmgmt.exception.ArtistException;
 import com.company.artistmgmt.model.BaseResponse;
 import com.company.artistmgmt.service.ArtistService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -19,8 +18,11 @@ import java.util.List;
 @Validated
 public class ArtistController {
 
-    @Autowired
-    private ArtistService artistService;
+    private final ArtistService artistService;
+
+    public ArtistController(ArtistService artistService) {
+        this.artistService = artistService;
+    }
 
     /**
      * List all artists with pagination. Accessible to SUPER_ADMIN and ARTIST_MANAGER.

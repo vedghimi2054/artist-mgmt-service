@@ -3,6 +3,7 @@ package com.company.artistmgmt.repository;
 import com.company.artistmgmt.config.DBResultSet;
 import com.company.artistmgmt.exception.ArtistException;
 import com.company.artistmgmt.exception.ArtistRuntimeException;
+import com.company.artistmgmt.exception.FailedException;
 import com.company.artistmgmt.model.User;
 import com.company.artistmgmt.model.general.Gender;
 import com.company.artistmgmt.model.general.Role;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Repository;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -40,8 +42,8 @@ public class UserRepoImpl implements UserRepo {
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
             logger.debug(QUERY, query);
-            statement.setInt(1, pageNo);
-            statement.setInt(2, pageSize);
+            statement.setInt(1, pageSize);
+            statement.setInt(2, pageNo * pageSize);
             return resultSet.getResults(statement.executeQuery(), this::extractUserInfo);
         } catch (SQLException e) {
             throw new ArtistException(e);
@@ -49,13 +51,13 @@ public class UserRepoImpl implements UserRepo {
     }
 
     @Override
-    public boolean createUser(User userEntity) {
+    public User createUser(User userEntity) throws ArtistException {
         logger.debug("Creating User");
         var query = "INSERT INTO `user` (id, first_name, last_name, email, password, phone, dob, gender, address, role) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
         try (var connection = dataSource.getConnection();
-             var statement = connection.prepareStatement(query)) {
+             var statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             logger.debug(QUERY, query);
 
             var i = 0;
@@ -70,11 +72,22 @@ public class UserRepoImpl implements UserRepo {
             statement.setString(++i, userEntity.getAddress());
             statement.setInt(++i, userEntity.getRole().getValue());
 
-            return statement.executeUpdate() == 1;
+            int rowsAffected = statement.executeUpdate();
+            if (rowsAffected == 0) {
+                throw new FailedException("Failed to create user.");
+            }
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    int generatedId = generatedKeys.getInt(1);
+                    userEntity.setId(generatedId);
+                } else {
+                    throw new FailedException("Failed to retrieve generated ID for user.");
+                }
+            }
         } catch (SQLException e) {
-            logger.error("Error while creating user.", e);
-            return false;
+            throw new ArtistException("Error while creating user.");
         }
+        return userEntity;
     }
 
     @Override

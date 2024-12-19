@@ -4,7 +4,6 @@ import com.company.artistmgmt.dto.UserDto;
 import com.company.artistmgmt.exception.ArtistException;
 import com.company.artistmgmt.model.BaseResponse;
 import com.company.artistmgmt.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -18,8 +17,12 @@ import java.util.List;
 @Validated
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     /**
      * List all users with pagination. Only accessible to SUPER_ADMIN.
