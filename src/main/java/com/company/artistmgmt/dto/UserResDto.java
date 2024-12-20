@@ -11,9 +11,8 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class UserDto {
+public class UserResDto {
     private int id;
-    @NotBlank(message = "First name is required")
     private String firstName;
     @NotBlank(message = "Last name is required")
     private String lastName;

@@ -14,6 +14,7 @@ public class Artist {
     private String address;
     private Integer firstReleaseYear;
     private Integer noOfAlbumsReleased;
+    private String fileURL;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

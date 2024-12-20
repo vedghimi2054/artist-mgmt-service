@@ -52,16 +52,16 @@ public class UserRepoImpl implements UserRepo {
     @Override
     public User createUser(User userEntity) throws ArtistException {
         logger.debug("Creating User");
-        var query = "INSERT INTO `user` (id, first_name, last_name, email, password, phone, dob, gender, address, role) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        var query = "INSERT INTO `user` (first_name, last_name, email, password, phone, dob, gender, address, role) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             logger.debug(QueryConst.QUERY, query);
 
             var i = 0;
-            statement.setInt(++i, userEntity.getId());
             statement.setString(++i, userEntity.getFirstName());
+            statement.setString(++i, userEntity.getLastName());
             statement.setString(++i, userEntity.getEmail());
             statement.setString(++i, userEntity.getPassword());
             statement.setString(++i, userEntity.getPhone());
@@ -84,7 +84,7 @@ public class UserRepoImpl implements UserRepo {
                 }
             }
         } catch (SQLException e) {
-            throw new ArtistException("Error while creating user.");
+            throw new ArtistException("Error while creating user." + e.getMessage(), e);
         }
         return userEntity;
     }
@@ -163,7 +163,7 @@ public class UserRepoImpl implements UserRepo {
     @Override
     public User getUserById(int id) throws ArtistException {
         logger.debug("Getting User detail by id:{}", id);
-        var query = SELECT + USER_FETCH_COLUMN_QUERY + WHERE + " id = ?";
+        var query = SELECT + USER_FETCH_COLUMN_QUERY + FROM + USER_TABLE + WHERE + " id = ?";
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
             logger.debug(QueryConst.QUERY, query);
@@ -180,10 +180,25 @@ public class UserRepoImpl implements UserRepo {
         var query = SELECT + "COUNT(id)" + FROM + USER_TABLE;
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
-            logger.debug(QUERY, query);
+            logger.debug(QueryConst.QUERY, query);
             return resultSet.count(statement.executeQuery());
         } catch (SQLException e) {
             throw new ArtistException("Error while count user.", e);
+        }
+    }
+
+    @Override
+    public User findUserByEmail(String email) throws ArtistException {
+        logger.debug("Find user by email:{}", email);
+        var query = SELECT + USER_FETCH_COLUMN_QUERY + FROM + USER_TABLE + WHERE + "a.email = ?";
+        try (var connection = dataSource.getConnection();
+             var statement = connection.prepareStatement(query)) {
+            logger.debug(QueryConst.QUERY, query);
+            statement.setString(1, email);
+            logger.debug("Execute query:{}", statement.toString());
+            return resultSet.getResult(statement.executeQuery(), this::extractUserInfo);
+        } catch (SQLException e) {
+            throw new ArtistException("Error while find user by email.", e);
         }
     }
 

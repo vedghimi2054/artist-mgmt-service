@@ -5,14 +5,14 @@ import com.company.artistmgmt.dto.ArtistDto;
 import com.company.artistmgmt.exception.ArtistException;
 import com.company.artistmgmt.model.BaseResponse;
 import com.company.artistmgmt.service.ArtistService;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -34,9 +34,9 @@ public class ArtistController {
      * @return paginated list of artists
      */
     @GetMapping
-//    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ARTIST_MANAGER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ARTIST_MANAGER')")
     public ResponseEntity<BaseResponse<List<ArtistDto>>> listArtists(
-            @RequestParam(defaultValue ="0") int pageNo,
+            @RequestParam(defaultValue = "0") int pageNo,
             @RequestParam(defaultValue = "10") int pageSize) {
         try {
             BaseResponse<List<ArtistDto>> artists = artistService.getAllArtists(pageNo, pageSize);
@@ -58,7 +58,7 @@ public class ArtistController {
      * @return the created artist
      */
     @PostMapping
-//    @PreAuthorize("hasRole('ARTIST_MANAGER')")
+    @PreAuthorize("hasRole('ARTIST_MANAGER')")
     public ResponseEntity<BaseResponse<ArtistDto>> createArtist(@Valid @RequestBody ArtistDto artistDto) {
         try {
             BaseResponse<ArtistDto> createdArtist = artistService.createArtist(artistDto);
@@ -80,7 +80,7 @@ public class ArtistController {
      * @return the updated artist
      */
     @PutMapping("/{id}")
-//    @PreAuthorize("hasRole('ARTIST_MANAGER')")
+    @PreAuthorize("hasRole('ARTIST_MANAGER')")
     public ResponseEntity<BaseResponse<ArtistDto>> updateArtist(@PathVariable int id, @Valid @RequestBody ArtistDto artistDto) {
         try {
             BaseResponse<ArtistDto> updatedArtist = artistService.updateArtist(id, artistDto);
@@ -101,7 +101,7 @@ public class ArtistController {
      * @return a success response
      */
     @DeleteMapping("/{id}")
-//    @PreAuthorize("hasRole('ARTIST_MANAGER')")
+    @PreAuthorize("hasRole('ARTIST_MANAGER')")
     public ResponseEntity<BaseResponse<Integer>> deleteArtist(@PathVariable int id) {
         try {
             BaseResponse<Integer> response = artistService.deleteArtist(id);
@@ -122,7 +122,7 @@ public class ArtistController {
      * @return the artist details
      */
     @GetMapping("/{id}")
-//    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ARTIST_MANAGER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ARTIST_MANAGER')")
     public ResponseEntity<BaseResponse<ArtistDto>> getArtistById(@PathVariable int id) {
         try {
             BaseResponse<ArtistDto> artist = artistService.getArtistById(id);
@@ -139,21 +139,42 @@ public class ArtistController {
 
     // Export artists to CSV
     @GetMapping("/export")
-    public ResponseEntity<BaseResponse<String>> exportToCsv(HttpServletResponse response) throws IOException {
-        response.setContentType("text/csv");
-        String headerKey = "Content-Disposition";
-        String headerValue = "attachment; filename=artists.csv";
-        response.setHeader(headerKey, headerValue);
+    @PreAuthorize("hasRole('ARTIST_MANAGER')")
+    public ResponseEntity<BaseResponse<ArtistDto>> exportToCsv() {
+        String filePath = "/home/prabin/Documents/cloco-project/artist-mgmt-service/artist_202412192150.csv";
+        String fileUrl = "http://localhost:8080/artists/download/artists.csv"; // Update with your server's base URL
+
         try {
-            artistService.exportArtistsToCsv(response.getWriter());
+            // Export to CSV and save the file
+            artistService.exportArtistsToCsv(filePath);
+            // Create a success response
+            BaseResponse<ArtistDto> response = new BaseResponse<>(true, "CSV export successfully.");
+            response.addMeta("fileURL", fileUrl);
+            return ResponseEntity.ok(response);
         } catch (ArtistException e) {
-            BaseResponse<String> errorResponse = new BaseResponse<>(
-                    HttpStatus.BAD_REQUEST.value(),  // Error status code
-                    e.getMessage()                   // Error message
+            BaseResponse<ArtistDto> errorResponse = new BaseResponse<>(
+                    HttpStatus.BAD_REQUEST.value(),
+                    e.getMessage()
             );
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
-        return null;
+    }
+
+    @PostMapping("/import")
+    @PreAuthorize("hasRole('ARTIST_MANAGER')")
+    public ResponseEntity<BaseResponse<ArtistDto>> importFromCsv(@RequestParam("file") MultipartFile file) {
+        try {
+            // Process the CSV file and save to the database
+            BaseResponse<ArtistDto> artistDtoBaseResponse = artistService.importArtistsFromCsv(file);
+            // Return success response
+            return ResponseEntity.ok(artistDtoBaseResponse);
+        } catch (ArtistException e) {
+            BaseResponse<ArtistDto> errorResponse = new BaseResponse<>(
+                    HttpStatus.BAD_REQUEST.value(),
+                    e.getMessage()
+            );
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
     }
 }
 

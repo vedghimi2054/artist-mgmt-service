@@ -15,6 +15,7 @@ public class ArtistDto {
     private String address;
     private int firstReleaseYear;
     private int noOfAlbumsReleased;
+    private String fileURL;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

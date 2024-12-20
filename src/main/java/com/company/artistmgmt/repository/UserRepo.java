@@ -19,4 +19,6 @@ public interface UserRepo {
     User getUserById(int id) throws ArtistException;
 
     long countTotalUsers() throws ArtistException;
+
+    User findUserByEmail(String email) throws ArtistException;
 }

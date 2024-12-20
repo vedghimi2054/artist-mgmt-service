@@ -1,11 +1,22 @@
 package com.company.artistmgmt.endpoint;
 
-import com.company.artistmgmt.dto.UserDto;
+import com.company.artistmgmt.dto.LoginReqDto;
+import com.company.artistmgmt.dto.LoginTokenDto;
+import com.company.artistmgmt.dto.UserReqDto;
+import com.company.artistmgmt.dto.UserResDto;
 import com.company.artistmgmt.exception.ArtistException;
+import com.company.artistmgmt.exception.AuthException;
 import com.company.artistmgmt.model.BaseResponse;
 import com.company.artistmgmt.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,13 +26,35 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/users")
 @Validated
+@RequiredArgsConstructor
 public class UserController {
 
 
     private final UserService userService;
+    private final AuthenticationManager authenticationManager;
 
-    public UserController(UserService userService) {
-        this.userService = userService;
+    @PostMapping("/login")
+    public ResponseEntity<BaseResponse<LoginTokenDto>> login(
+            @RequestBody LoginReqDto loginReqDto,
+            HttpServletRequest request) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginReqDto.getEmail(), loginReqDto.getPassword())
+            );
+            if (authentication.isAuthenticated()) {
+                BaseResponse<LoginTokenDto> loginTokenDTO = userService.login(loginReqDto, request);
+                return ResponseEntity.ok(loginTokenDTO);
+            } else {
+                throw new AuthException("Authentication failed.");
+            }
+        } catch (UsernameNotFoundException | ArtistException ex) {
+            BaseResponse<LoginTokenDto> errorResponse = new BaseResponse<>(
+                    HttpStatus.UNAUTHORIZED.value(),  // Error status code
+                    ex.getMessage()                   // Error message
+            );
+            return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+        }
+
     }
 
     /**
@@ -32,14 +65,15 @@ public class UserController {
      * @return paginated list of users
      */
     @GetMapping
-    public ResponseEntity<BaseResponse<List<UserDto>>> listUsers(
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    public ResponseEntity<BaseResponse<List<UserResDto>>> listUsers(
             @RequestParam(defaultValue = "0") int pageNo,
             @RequestParam(defaultValue = "10") int pageSize) {
         try {
-            BaseResponse<List<UserDto>> users = userService.getAllUsers(pageNo, pageSize);
+            BaseResponse<List<UserResDto>> users = userService.getAllUsers(pageNo, pageSize);
             return ResponseEntity.ok(users);
         } catch (ArtistException ex) {
-            BaseResponse<List<UserDto>> errorResponse = new BaseResponse<>(
+            BaseResponse<List<UserResDto>> errorResponse = new BaseResponse<>(
                     HttpStatus.BAD_REQUEST.value(),  // Error status code
                     ex.getMessage()                   // Error message
             );
@@ -54,13 +88,14 @@ public class UserController {
      * @param userDto the user DTO
      * @return the created user
      */
-    @PostMapping
-    public ResponseEntity<BaseResponse<UserDto>> createUser(@Valid @RequestBody UserDto userDto) {
+    @PostMapping("/save")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    public ResponseEntity<BaseResponse<UserResDto>> createUser(@Valid @RequestBody UserReqDto userDto) {
         try {
-            BaseResponse<UserDto> createdUser = userService.createUser(userDto);
+            BaseResponse<UserResDto> createdUser = userService.createUser(userDto);
             return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
         } catch (ArtistException ex) {
-            BaseResponse<UserDto> errorResponse = new BaseResponse<>(
+            BaseResponse<UserResDto> errorResponse = new BaseResponse<>(
                     HttpStatus.BAD_REQUEST.value(),  // Error status code
                     ex.getMessage()                   // Error message
             );
@@ -76,12 +111,13 @@ public class UserController {
      * @return the updated user
      */
     @PutMapping("/{id}")
-    public ResponseEntity<BaseResponse<UserDto>> updateUser(@PathVariable int id, @Valid @RequestBody UserDto userDto) {
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    public ResponseEntity<BaseResponse<UserResDto>> updateUser(@PathVariable int id, @Valid @RequestBody UserReqDto userDto) {
         try {
-            BaseResponse<UserDto> updatedUser = userService.updateUser(id, userDto);
+            BaseResponse<UserResDto> updatedUser = userService.updateUser(id, userDto);
             return ResponseEntity.ok(updatedUser);
         } catch (ArtistException ex) {
-            BaseResponse<UserDto> errorResponse = new BaseResponse<>(
+            BaseResponse<UserResDto> errorResponse = new BaseResponse<>(
                     HttpStatus.BAD_REQUEST.value(),  // Error status code
                     ex.getMessage()                   // Error message
             );
@@ -97,6 +133,7 @@ public class UserController {
      * @return a success response
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     public ResponseEntity<BaseResponse<Integer>> deleteUser(@PathVariable int id) {
         try {
             BaseResponse<Integer> deletedId = userService.deleteUser(id);
@@ -119,12 +156,12 @@ public class UserController {
      * @return the user details
      */
     @GetMapping("/{id}")
-    public ResponseEntity<BaseResponse<UserDto>> getUserById(@PathVariable int id) {
+    public ResponseEntity<BaseResponse<UserResDto>> getUserById(@PathVariable int id) {
         try {
-            BaseResponse<UserDto> user = userService.getUserById(id);
+            BaseResponse<UserResDto> user = userService.getUserById(id);
             return ResponseEntity.ok(user);
         } catch (ArtistException ex) {
-            BaseResponse<UserDto> errorResponse = new BaseResponse<>(
+            BaseResponse<UserResDto> errorResponse = new BaseResponse<>(
                     HttpStatus.BAD_REQUEST.value(),  // Error status code
                     ex.getMessage()                   // Error message
             );

@@ -14,9 +14,10 @@ import com.opencsv.CSVWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,7 +43,6 @@ public class ArtistServiceImpl implements ArtistService {
         validateArtistDto(artistDto);
         Artist artistEntity = toArtistEntity(artistDto);
         Artist artist = artistRepo.createArtist(artistEntity);
-        logger.debug("After insert:{}", artist);
         Artist artistById = artistRepo.getArtistById(artist.getId());
         ArtistDto dto = toArtistDto(artistById);
         return new BaseResponse<>(true, dto);
@@ -118,22 +118,22 @@ public class ArtistServiceImpl implements ArtistService {
     }
 
     @Override
-    public void exportArtistsToCsv(PrintWriter writer) throws ArtistException {
-        logger.debug("Exporting artists to csv");
+    public void exportArtistsToCsv(String filePath) throws ArtistException {
         List<Artist> artists = artistRepo.getAllArtists(0, 10);
 
-        try (CSVWriter csvWriter = new CSVWriter(writer)) {
-            // Write header
+        try (Writer writer = new FileWriter(filePath);
+             CSVWriter csvWriter = new CSVWriter(writer)) {
+            // Write CSV header
             String[] header = {"ID", "Name", "DOB", "Gender", "Address", "First Release Year", "No of Albums Released"};
             csvWriter.writeNext(header);
 
-            // Write data
+            // Write artist data
             for (Artist artist : artists) {
                 String[] data = {
                         String.valueOf(artist.getId()),
                         artist.getName(),
                         String.valueOf(artist.getDob()),
-                        String.valueOf(artist.getGender().getValue()),
+                        artist.getGender().toString(),
                         artist.getAddress(),
                         String.valueOf(artist.getFirstReleaseYear()),
                         String.valueOf(artist.getNoOfAlbumsReleased())
@@ -141,8 +141,46 @@ public class ArtistServiceImpl implements ArtistService {
                 csvWriter.writeNext(data);
             }
         } catch (IOException e) {
-            throw new ArtistException("Failed to export csv.", e);
+            throw new ArtistException("Failed to export CSV file", e);
         }
+    }
+
+    @Override
+    public BaseResponse<ArtistDto> importArtistsFromCsv(MultipartFile file) throws ArtistException {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+            String line;
+            boolean isFirstLine = true; // To skip the header
+
+            while ((line = br.readLine()) != null) {
+                if (isFirstLine) {
+                    isFirstLine = false;
+                    continue; // Skip header
+                }
+
+                // Split CSV line into columns
+                String[] columns = line.split(",");
+
+                // Create and save artist entity
+                Artist artist = new Artist();
+                artist.setId(Integer.parseInt(columns[0].replace("\"", "").trim()));
+                artist.setName(columns[1].replace("\"", "").trim());
+                artist.setDob(LocalDateTime.parse(columns[2].replace("\"", "").trim()));
+                artist.setGender(Gender.valueOf(columns[3].replace("\"", "").trim().toUpperCase()));
+                artist.setAddress(columns[4].replace("\"", "").trim());
+                artist.setFirstReleaseYear(Integer.parseInt(columns[5].replace("\"", "").trim()));
+                artist.setNoOfAlbumsReleased(Integer.parseInt(columns[6].replace("\"", "").trim()));
+
+                Artist createdArtist = artistRepo.createArtist(artist);
+                Artist artistById = artistRepo.getArtistById(createdArtist.getId());
+                ArtistDto dto = toArtistDto(artistById);
+                return new BaseResponse<>(true, dto);
+            }
+        } catch (IOException e) {
+            throw new ArtistException("Failed to process the CSV file.", e);
+        } catch (Exception e) {
+            throw new ArtistException("Invalid data format in the CSV file.", e);
+        }
+        return null;
     }
 
     /**

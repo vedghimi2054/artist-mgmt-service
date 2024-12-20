@@ -1,9 +1,10 @@
 package com.company.artistmgmt.model.general;
 
+import org.springframework.security.core.GrantedAuthority;
 import lombok.Getter;
 
 @Getter
-public enum Role {
+public enum Role implements GrantedAuthority {
     SUPER_ADMIN(1),
     ARTIST_MANAGER(2),
     ARTIST(3);
@@ -33,5 +34,15 @@ public enum Role {
             }
         }
         throw new IllegalArgumentException("Invalid Role value: " + value);
+    }
+
+    @Override
+    public String getAuthority() {
+        return this.name();
+    }
+
+    @Override
+    public String toString() {
+        return this.name();
     }
 }

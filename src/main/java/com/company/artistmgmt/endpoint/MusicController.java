@@ -6,6 +6,7 @@ import com.company.artistmgmt.model.BaseResponse;
 import com.company.artistmgmt.service.MusicService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,7 +32,7 @@ public class MusicController {
      * @return paginated list of songs for the given artist
      */
     @GetMapping("/artist/{artistId}")
-//    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ARTIST_MANAGER', 'ARTIST')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ARTIST_MANAGER')")
     public ResponseEntity<BaseResponse<List<MusicDto>>> listSongsForArtist(
             @PathVariable int artistId,
             @RequestParam(defaultValue = "0") int pageNo,
@@ -57,7 +58,7 @@ public class MusicController {
      * @return the created music
      */
     @PostMapping("/artist/{artistId}")
-//    @PreAuthorize("hasRole('ARTIST')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ARTIST')")
     public ResponseEntity<BaseResponse<MusicDto>> createSongForArtist(
             @PathVariable int artistId, @Valid @RequestBody MusicDto musicDto) {
         try {
@@ -81,7 +82,7 @@ public class MusicController {
      * @return the updated music
      */
     @PutMapping("/artist/{artistId}/{id}")
-//    @PreAuthorize("hasRole('ARTIST')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ARTIST')")
     public ResponseEntity<BaseResponse<MusicDto>> updateSongForArtist(
             @PathVariable int artistId, @PathVariable int id, @Valid @RequestBody MusicDto musicDto) {
         try {
@@ -104,7 +105,7 @@ public class MusicController {
      * @return a success response
      */
     @DeleteMapping("/artist/{artistId}/{id}")
-//    @PreAuthorize("hasRole('ARTIST')")
+    @PreAuthorize("hasAnyRole('ARTIST')")
     public ResponseEntity<BaseResponse<Integer>> deleteSongForArtist(
             @PathVariable int artistId, @PathVariable int id) {
         try {

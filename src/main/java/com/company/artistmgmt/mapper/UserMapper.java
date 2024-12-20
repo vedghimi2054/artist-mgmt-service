@@ -1,11 +1,12 @@
 package com.company.artistmgmt.mapper;
 
-import com.company.artistmgmt.dto.UserDto;
+import com.company.artistmgmt.dto.UserReqDto;
+import com.company.artistmgmt.dto.UserResDto;
 import com.company.artistmgmt.model.User;
 
 public class UserMapper {
-    public static UserDto toUserDto(User user) {
-        UserDto dto = new UserDto();
+    public static UserResDto toUserDto(User user) {
+        UserResDto dto = new UserResDto();
         dto.setId(user.getId());
         dto.setFirstName(user.getFirstName());
         dto.setLastName(user.getLastName());
@@ -20,7 +21,7 @@ public class UserMapper {
         return dto;
     }
 
-    public static User toUserEntity(UserDto dto) {
+    public static User toUserEntity(UserReqDto dto) {
         User user = new User();
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
@@ -30,6 +31,7 @@ public class UserMapper {
         user.setGender(dto.getGender());
         user.setAddress(dto.getAddress());
         user.setRole(dto.getRole());
+        user.setPassword(dto.getPassword());
         return user;
     }
 }

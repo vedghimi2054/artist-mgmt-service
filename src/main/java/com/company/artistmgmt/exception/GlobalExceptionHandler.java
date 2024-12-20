@@ -4,8 +4,11 @@ import com.company.artistmgmt.model.BaseResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.nio.file.AccessDeniedException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -18,6 +21,26 @@ public class GlobalExceptionHandler {
         );
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    // This handler will catch AccessDeniedException thrown by @PreAuthorize
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<BaseResponse<String>> handleAccessDeniedException(AccessDeniedException ex) {
+        BaseResponse<String> errorResponse = new BaseResponse<>(
+                HttpStatus.FORBIDDEN.value(), // 403 Forbidden
+                "User does not have permission to access this resource"
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<BaseResponse<Object>> handleUsernameNotFoundException(UsernameNotFoundException ex) {
+        BaseResponse<Object> errorResponse = new BaseResponse<>(
+                HttpStatus.UNAUTHORIZED.value(),  // Status code for the error
+                ex.getMessage()                   // Error message
+        );
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
     }
 
     // Handle ResourceNotFoundException (user not found)
@@ -40,6 +63,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<BaseResponse<String>> handleAuthException(AuthException ex) {
+        BaseResponse<String> errorResponse = new BaseResponse<>(
+                HttpStatus.UNAUTHORIZED.value(),
+                ex.getMessage()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+    }
+
     @ExceptionHandler(ArtistRuntimeException.class)
     public ResponseEntity<BaseResponse<String>> handleArtistRuntimeException(ArtistRuntimeException ex) {
         BaseResponse<String> errorResponse = new BaseResponse<>(
@@ -56,6 +88,15 @@ public class GlobalExceptionHandler {
                 ex.getMessage()
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NotAllowedException.class)
+    public ResponseEntity<BaseResponse<String>> handleNotAllowedException(NotAllowedException ex) {
+        BaseResponse<String> errorResponse = new BaseResponse<>(
+                HttpStatus.FORBIDDEN.value(),
+                ex.getMessage()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
     }
 
     // Handle invalid request body parsing (malformed JSON or missing fields)

@@ -14,14 +14,20 @@ public class BaseResponse<T> {
     private LocalDateTime timestamp;
     private boolean error;
     private T dataResponse;
-    private Map<String, Object> meta;//for pagination
+    private Map<String, Object> meta;
 
     public BaseResponse() {
         this.meta = new HashMap<>();
     }
 
+    public BaseResponse(boolean success, String message) {
+       super();
+        this.success = success;
+        this.message = message;
+    }
+
     public BaseResponse(boolean success, T dataResponse) {
-        this();
+       super();
         this.success = success;
         this.timestamp = LocalDateTime.now();
         this.error = false;
@@ -32,7 +38,7 @@ public class BaseResponse<T> {
 
     // Constructor for error
     public BaseResponse(int statusCode, String message) {
-        this();
+        super();
         this.success = false;
         this.timestamp = LocalDateTime.now();
         this.error = true;

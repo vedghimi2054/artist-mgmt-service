@@ -99,7 +99,9 @@ public class MusicRepoImpl implements MusicRepo {
     @Override
     public List<Music> getSongsByArtist(int artistId, int validatePageSize, int offset) throws ArtistException {
         logger.debug("Getting songs by artist with: Payload:{}", artistId);
-        String query = SELECT + MUSIC_FETCH_COLUMN_QUERY + FROM + MUSIC_TABLE + WHERE +"artist_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
+        String query = SELECT + MUSIC_FETCH_COLUMN_QUERY + FROM + MUSIC_TABLE +
+                " INNER JOIN artist.artist a on m.artist_id = a.id " +
+                WHERE + "m.artist_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
@@ -162,17 +164,17 @@ public class MusicRepoImpl implements MusicRepo {
     private Music extractMusicInfo(ResultSet resultSet) {
         try {
             Music music = new Music();
-            music.setId(resultSet.getInt("id"));
-            music.setTitle(resultSet.getString("title"));
-            music.setArtistId(resultSet.getInt("artist_id"));
-            music.setAlbumName(resultSet.getString("album_name"));
-            int genre = resultSet.getInt("genre");
+            music.setId(resultSet.getInt("m.id"));
+            music.setTitle(resultSet.getString("m.title"));
+            music.setArtistId(resultSet.getInt("m.artist_id"));
+            music.setAlbumName(resultSet.getString("m.album_name"));
+            int genre = resultSet.getInt("m.genre");
             music.setGenre(Genre.fromValue(genre));
-            Timestamp createdAt = resultSet.getTimestamp("created_at");
+            Timestamp createdAt = resultSet.getTimestamp("m.created_at");
             if (createdAt != null) {
                 music.setCreatedAt(createdAt.toLocalDateTime());
             }
-            Timestamp updatedAt = resultSet.getTimestamp("updated_at");
+            Timestamp updatedAt = resultSet.getTimestamp("m.updated_at");
             if (updatedAt != null) {
                 music.setUpdatedAt(updatedAt.toLocalDateTime());
             }
