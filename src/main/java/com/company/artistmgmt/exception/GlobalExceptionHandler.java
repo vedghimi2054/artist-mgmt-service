@@ -72,7 +72,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<BaseResponse<String>> handleGenericExceptions(Exception ex) {
         BaseResponse<String> errorResponse = new BaseResponse<>(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "An unexpected error occurred."
+                "An unexpected error occurred." + ex.getMessage()
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }

@@ -1,6 +1,5 @@
 package com.company.artistmgmt.model.general;
 
-import com.company.artistmgmt.exception.ArtistRuntimeException;
 import lombok.Getter;
 
 @Getter
@@ -15,19 +14,15 @@ public enum Gender {
         this.value = value;
     }
 
-    public int getValue() {
-        return value;
-    }
-
     public static boolean isValid(String genderName) {
         if (genderName == null) {
-            return false;
+            return true;
         }
         try {
             Gender.valueOf(genderName.toUpperCase());
-            return true;
-        } catch (IllegalArgumentException e) {
             return false;
+        } catch (IllegalArgumentException e) {
+            return true;
         }
     }
     public static Gender fromValue(int value) {

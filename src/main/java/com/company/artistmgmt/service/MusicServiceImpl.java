@@ -1,6 +1,5 @@
 package com.company.artistmgmt.service;
 
-import com.company.artistmgmt.dto.ArtistDto;
 import com.company.artistmgmt.dto.MusicDto;
 import com.company.artistmgmt.exception.ArtistException;
 import com.company.artistmgmt.exception.FailedException;
@@ -13,16 +12,15 @@ import com.company.artistmgmt.repository.ArtistRepo;
 import com.company.artistmgmt.repository.MusicRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.company.artistmgmt.mapper.MusicMapper.toMusicDto;
 import static com.company.artistmgmt.mapper.MusicMapper.toMusicEntity;
-import static com.company.artistmgmt.util.PaginationUtils.validateAndSetDefaults;
+import static com.company.artistmgmt.repository.QueryConst.*;
+import static com.company.artistmgmt.util.MetaUtils.extractedMeta;
 
 @Service
 public class MusicServiceImpl implements MusicService {
@@ -45,7 +43,7 @@ public class MusicServiceImpl implements MusicService {
         }
         // Calculate offset
         int offset = pageNo * pageSize;
-        if (!artistRepo.checkArtistExistsById(artistId)) {
+        if (artistRepo.checkArtistExistsById(artistId)) {
             throw new ResourceNotFoundException("Artist ID " + artistId + " not found.");
         }
         List<Music> musicEntities = musicRepo.getSongsByArtist(artistId, pageSize, offset);
@@ -53,15 +51,9 @@ public class MusicServiceImpl implements MusicService {
         List<MusicDto> musicDtoList = musicEntities.stream().map(MusicMapper::toMusicDto).collect(Collectors.toList());
         // Add pagination details to response
         BaseResponse<List<MusicDto>> response = new BaseResponse<>();
-        response.setSuccess(true);
-        response.setTimestamp(LocalDateTime.now());
-        response.setMessage("Music Fetch successfully");
-        response.setStatusCode(HttpStatus.OK.value());
+        response.setMessage(MUSIC_SUCCESS_MSG);
         response.setDataResponse(musicDtoList);
-        response.addMeta("totalCount", totalCount);
-        response.addMeta("totalPages", (int) Math.ceil((double) totalCount / pageSize));
-        response.addMeta("currentPage", pageNo);
-        response.addMeta("pageSize", pageSize);
+        extractedMeta(pageNo, pageSize, response, totalCount);
         return response;
     }
 
@@ -69,7 +61,7 @@ public class MusicServiceImpl implements MusicService {
     public BaseResponse<MusicDto> createSongForArtist(int artistId, MusicDto musicDto) throws ArtistException {
         logger.debug("Creating songs for artist id:{} with: Payload:{}", artistId, musicDto);
         Music musicEntity = toMusicEntity(musicDto);
-        if (!artistRepo.checkArtistExistsById(artistId)) {
+        if (artistRepo.checkArtistExistsById(artistId)) {
             throw new ResourceNotFoundException("Artist ID " + artistId + " not found for artist.");
         }
         Music songForArtist = musicRepo.createSongForArtist(artistId, musicEntity);
@@ -83,7 +75,7 @@ public class MusicServiceImpl implements MusicService {
     public BaseResponse<MusicDto> updateSongForArtist(int artistId, int id, MusicDto musicDto) throws ArtistException {
         logger.debug("Updating songs for artist id:{} and musicId:{} with: Payload:{}", artistId, id, musicDto);
         Music musicEntity = toMusicEntity(musicDto);
-        if (!musicRepo.checkMusicExistsById(id, artistId)) {
+        if (musicRepo.checkMusicExistsById(id, artistId)) {
             throw new ResourceNotFoundException("Music with ID " + id + " not found for artist.");
         }
         if (!musicRepo.updateSongForArtist(artistId, id, musicEntity)) {
@@ -97,7 +89,7 @@ public class MusicServiceImpl implements MusicService {
     @Override
     public BaseResponse<Integer> deleteSongForArtist(int artistId, int id) throws ArtistException {
         logger.debug("Deleting songs for artist id:{} and musicId:{}", artistId, id);
-        if (!musicRepo.checkMusicExistsById(id, artistId)) {
+        if (musicRepo.checkMusicExistsById(id, artistId)) {
             throw new ResourceNotFoundException("Music with ID " + id + " not found for artist");
         }
         if (!musicRepo.deleteSongForArtist(artistId, id)) {

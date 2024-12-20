@@ -16,7 +16,6 @@ import java.sql.*;
 import java.util.List;
 
 import static com.company.artistmgmt.repository.QueryConst.*;
-import static com.company.artistmgmt.repository.QueryConst.ARTIST_TABLE;
 
 @Repository
 public class MusicRepoImpl implements MusicRepo {
@@ -37,7 +36,7 @@ public class MusicRepoImpl implements MusicRepo {
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-            logger.debug(QUERY, query);
+            logger.debug(QueryConst.QUERY, query);
             statement.setString(1, musicEntity.getTitle());
             statement.setInt(2, artistId);
             statement.setString(3, musicEntity.getAlbumName());
@@ -68,7 +67,7 @@ public class MusicRepoImpl implements MusicRepo {
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
-            logger.debug(QUERY, query);
+            logger.debug(QueryConst.QUERY, query);
             statement.setString(1, musicEntity.getTitle());
             statement.setString(2, musicEntity.getAlbumName());
             statement.setInt(3, musicEntity.getGenre().getValue());
@@ -88,7 +87,7 @@ public class MusicRepoImpl implements MusicRepo {
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
-            logger.debug(QUERY, query);
+            logger.debug(QueryConst.QUERY, query);
             statement.setInt(1, id);
             statement.setInt(2, artistId);
             return statement.executeUpdate() == 1;
@@ -100,11 +99,11 @@ public class MusicRepoImpl implements MusicRepo {
     @Override
     public List<Music> getSongsByArtist(int artistId, int validatePageSize, int offset) throws ArtistException {
         logger.debug("Getting songs by artist with: Payload:{}", artistId);
-        String query = "SELECT * FROM music WHERE artist_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
+        String query = SELECT + MUSIC_FETCH_COLUMN_QUERY + FROM + MUSIC_TABLE + WHERE +"artist_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
-            logger.debug(QUERY, query);
+            logger.debug(QueryConst.QUERY, query);
             statement.setInt(1, artistId);
             statement.setInt(2, validatePageSize);
             statement.setInt(3, offset);
@@ -121,7 +120,7 @@ public class MusicRepoImpl implements MusicRepo {
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
-            logger.debug(QUERY, query);
+            logger.debug(QueryConst.QUERY, query);
             statement.setInt(1, id);
             statement.setInt(2, artistId);
             return resultSet.getResult(statement.executeQuery(), this::extractMusicInfo);
@@ -136,7 +135,7 @@ public class MusicRepoImpl implements MusicRepo {
         var query = SELECT + "COUNT(id)" + FROM + MUSIC_TABLE + WHERE + "artist_id =?";
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
-            logger.debug(QUERY, query);
+            logger.debug(QueryConst.QUERY, query);
             statement.setInt(1, artistId);
             return resultSet.count(statement.executeQuery());
         } catch (SQLException e) {
@@ -151,10 +150,10 @@ public class MusicRepoImpl implements MusicRepo {
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
-            logger.debug(QUERY, query);
+            logger.debug(QueryConst.QUERY, query);
             statement.setInt(1, id);
             statement.setInt(2, artistId);
-            return resultSet.count(statement.executeQuery()) > 0;
+            return resultSet.count(statement.executeQuery()) <= 0;
         } catch (SQLException e) {
             throw new ArtistException("Error while fetching song by ID.", e);
         }

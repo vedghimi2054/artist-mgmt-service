@@ -1,6 +1,5 @@
 package com.company.artistmgmt.dto;
 
-import com.company.artistmgmt.model.general.Gender;
 import com.company.artistmgmt.model.general.Genre;
 import lombok.Data;
 

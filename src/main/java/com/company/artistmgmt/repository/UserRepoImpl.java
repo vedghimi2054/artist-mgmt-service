@@ -21,12 +21,10 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import static com.company.artistmgmt.repository.QueryConst.*;
-import static com.company.artistmgmt.repository.QueryConst.QUERY;
 
 @Repository
 public class UserRepoImpl implements UserRepo {
     private static final Logger logger = LoggerFactory.getLogger(UserRepoImpl.class);
-    private static final String QUERY = "Query:{}";
     private final DataSource dataSource;
 
     private final DBResultSet resultSet;
@@ -42,7 +40,7 @@ public class UserRepoImpl implements UserRepo {
         var query = "SELECT * FROM user ORDER BY created_at DESC LIMIT ? OFFSET ?";
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
-            logger.debug(QUERY, query);
+            logger.debug(QueryConst.QUERY, query);
             statement.setInt(1, validatedPageSize);
             statement.setInt(2, offset);
             return resultSet.getResults(statement.executeQuery(), this::extractUserInfo);
@@ -59,7 +57,7 @@ public class UserRepoImpl implements UserRepo {
 
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-            logger.debug(QUERY, query);
+            logger.debug(QueryConst.QUERY, query);
 
             var i = 0;
             statement.setInt(++i, userEntity.getId());
@@ -97,9 +95,9 @@ public class UserRepoImpl implements UserRepo {
         var query = SELECT + "COUNT(id)" + FROM + USER_TABLE + WHERE + " id = ?";
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
-            logger.debug(QUERY, query);
+            logger.debug(QueryConst.QUERY, query);
             statement.setInt(1, id);
-            return resultSet.count(statement.executeQuery()) > 0;
+            return resultSet.count(statement.executeQuery()) <= 0;
         } catch (SQLException e) {
             throw new ArtistException(e);
         }
@@ -125,10 +123,10 @@ public class UserRepoImpl implements UserRepo {
             statement.setTimestamp(++i, useEntity.getDob() != null ?
                     Timestamp.valueOf(useEntity.getDob()) : null);
             statement.setInt(++i, useEntity.getGender() != null ?
-                    useEntity.getGender().getValue() : null);
+                    useEntity.getGender().getValue() : 0);
             statement.setString(++i, useEntity.getAddress());
             statement.setInt(++i, useEntity.getRole() != null ?
-                    useEntity.getRole().getValue() : null);
+                    useEntity.getRole().getValue() : 0);
             statement.setInt(++i, id);
 
             int rowsAffected = statement.executeUpdate();
@@ -153,7 +151,7 @@ public class UserRepoImpl implements UserRepo {
         var query = "DELETE FROM user.user where id = ?";
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
-            logger.debug(QUERY, query);
+            logger.debug(QueryConst.QUERY, query);
             statement.setInt(1, id);
             return statement.executeUpdate() == 1;
         } catch (SQLException ex) {
@@ -164,11 +162,11 @@ public class UserRepoImpl implements UserRepo {
 
     @Override
     public User getUserById(int id) throws ArtistException {
-        logger.debug("Getting User by id:{}", id);
+        logger.debug("Getting User detail by id:{}", id);
         var query = SELECT + USER_FETCH_COLUMN_QUERY + WHERE + " id = ?";
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
-            logger.debug(QUERY, query);
+            logger.debug(QueryConst.QUERY, query);
             statement.setInt(1, id);
             return resultSet.getResult(statement.executeQuery(), this::extractUserInfo);
         } catch (SQLException e) {

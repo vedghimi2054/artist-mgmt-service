@@ -1,6 +1,5 @@
 package com.company.artistmgmt.service;
 
-import com.company.artistmgmt.dto.MusicDto;
 import com.company.artistmgmt.dto.UserDto;
 import com.company.artistmgmt.exception.ArtistException;
 import com.company.artistmgmt.exception.FailedException;
@@ -14,16 +13,15 @@ import com.company.artistmgmt.model.general.Role;
 import com.company.artistmgmt.repository.UserRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.company.artistmgmt.mapper.UserMapper.toUserDto;
 import static com.company.artistmgmt.mapper.UserMapper.toUserEntity;
-import static com.company.artistmgmt.util.PaginationUtils.validateAndSetDefaults;
+import static com.company.artistmgmt.repository.QueryConst.*;
+import static com.company.artistmgmt.util.MetaUtils.extractedMeta;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -52,7 +50,7 @@ public class UserServiceImpl implements UserService {
         logger.debug("Updating user with id:{} and Payload:{}", id, userDto);
         validateId(id);
 
-        if (!userRepository.existsById(id)) {
+        if (userRepository.existsById(id)) {
             throw new ResourceNotFoundException("User with ID " + id + " not found");
         }
 
@@ -72,7 +70,7 @@ public class UserServiceImpl implements UserService {
         logger.debug("Deleting user with id:{}", userId);
         validateId(userId);
 
-        if (!userRepository.existsById(userId)) {
+        if (userRepository.existsById(userId)) {
             throw new ResourceNotFoundException("User with ID " + userId + " not found");
         }
         if (!userRepository.deleteUser(userId)) {
@@ -94,15 +92,9 @@ public class UserServiceImpl implements UserService {
         long totalCount = userRepository.countTotalUsers();
         List<UserDto> userDtoList = allUsers.stream().map(UserMapper::toUserDto).collect(Collectors.toList());
         BaseResponse<List<UserDto>> response = new BaseResponse<>();
-        response.setSuccess(true);
-        response.setTimestamp(LocalDateTime.now());
-        response.setMessage("User Fetch successfully");
-        response.setStatusCode(HttpStatus.OK.value());
+        response.setMessage(USER_SUCCESS_MSG);
         response.setDataResponse(userDtoList);
-        response.addMeta("totalCount", totalCount);
-        response.addMeta("totalPages", (int) Math.ceil((double) totalCount / pageSize));
-        response.addMeta("currentPage", pageNo);
-        response.addMeta("pageSize", pageSize);
+        extractedMeta(pageNo, pageSize, response, totalCount);
         return response;
     }
 
@@ -110,7 +102,7 @@ public class UserServiceImpl implements UserService {
     public BaseResponse<UserDto> getUserById(int id) throws ArtistException {
         logger.debug("Getting user with id:{}", id);
         validateId(id);
-        if (!userRepository.existsById(id)) {
+        if (userRepository.existsById(id)) {
             throw new ResourceNotFoundException("User with ID " + id + " not found");
         }
         User userById = userRepository.getUserById(id);
@@ -151,7 +143,7 @@ public class UserServiceImpl implements UserService {
             throw new ValidationException("Invalid role value");
         }
 
-        if (userDto.getGender() != null && !Gender.isValid(userDto.getGender().name())) {
+        if (userDto.getGender() != null && Gender.isValid(userDto.getGender().name())) {
             throw new ValidationException("Invalid gender value");
         }
     }

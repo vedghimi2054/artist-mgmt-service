@@ -1,5 +1,8 @@
 package com.company.artistmgmt.model.general;
 
+import lombok.Getter;
+
+@Getter
 public enum Genre {
     MB(1),
     COUNTRY(2),
@@ -11,10 +14,6 @@ public enum Genre {
 
     Genre(int value) {
         this.value = value;
-    }
-
-    public int getValue() {
-        return value;
     }
 
     public static Genre fromValue(int value) {

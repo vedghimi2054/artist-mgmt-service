@@ -1,5 +1,8 @@
 package com.company.artistmgmt.model.general;
 
+import lombok.Getter;
+
+@Getter
 public enum Role {
     SUPER_ADMIN(1),
     ARTIST_MANAGER(2),
@@ -9,10 +12,6 @@ public enum Role {
 
     Role(int value) {
         this.value = value;
-    }
-
-    public int getValue() {
-        return value;
     }
 
     public static boolean isValid(String roleName) {
@@ -34,17 +33,5 @@ public enum Role {
             }
         }
         throw new IllegalArgumentException("Invalid Role value: " + value);
-    }
-
-    public static Role parseRole(String roleStr) {
-        if (roleStr == null) {
-            throw new IllegalArgumentException("Role value cannot be null.");
-        }
-        return switch (roleStr.toUpperCase()) {
-            case "SUPER_ADMIN" -> SUPER_ADMIN;
-            case "ARTIST_MANAGER" -> ARTIST_MANAGER;
-            case "ARTIST" -> ARTIST;
-            default -> throw new IllegalArgumentException("Invalid role string: " + roleStr);
-        };
     }
 }

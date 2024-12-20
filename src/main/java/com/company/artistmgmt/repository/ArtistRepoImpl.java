@@ -41,7 +41,7 @@ public class ArtistRepoImpl implements ArtistRepo {
 
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-            logger.debug(QUERY, query);
+            logger.debug(QueryConst.QUERY, query);
 
             var i = 0;
             statement.setString(++i, artistEntity.getName());
@@ -76,9 +76,9 @@ public class ArtistRepoImpl implements ArtistRepo {
         var query = SELECT + "COUNT(id)" + FROM + ARTIST_TABLE + WHERE + " id = ?";
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
-            logger.debug(QUERY, query);
+            logger.debug(QueryConst.QUERY, query);
             statement.setInt(1, id);
-            return resultSet.count(statement.executeQuery()) > 0;
+            return resultSet.count(statement.executeQuery()) <= 0;
         } catch (SQLException e) {
             throw new ArtistException("Error while checking artist exists by id.", e);
         }
@@ -94,7 +94,7 @@ public class ArtistRepoImpl implements ArtistRepo {
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
 
-            logger.debug(QUERY, query);
+            logger.debug(QueryConst.QUERY, query);
 
             int i = 0;
             statement.setString(++i, artistEntity.getName());
@@ -128,7 +128,7 @@ public class ArtistRepoImpl implements ArtistRepo {
         var query = "DELETE FROM artist where id = ?";
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
-            logger.debug(QUERY, query);
+            logger.debug(QueryConst.QUERY, query);
             statement.setInt(1, id);
             return statement.executeUpdate() == 1;
         } catch (SQLException ex) {
@@ -143,7 +143,7 @@ public class ArtistRepoImpl implements ArtistRepo {
         var query = "SELECT * FROM artist ORDER BY created_at DESC LIMIT ? OFFSET ?";
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
-            logger.debug(QUERY, query);
+            logger.debug(QueryConst.QUERY, query);
             statement.setInt(1, validatePageSize);
             statement.setInt(2, offset);
             return resultSet.getResults(statement.executeQuery(), this::extractArtistInfo);
@@ -172,7 +172,7 @@ public class ArtistRepoImpl implements ArtistRepo {
         var query = SELECT + "COUNT(id)" + FROM + ARTIST_TABLE;
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
-            logger.debug(QUERY, query);
+            logger.debug(QueryConst.QUERY, query);
             return resultSet.count(statement.executeQuery());
         } catch (SQLException e) {
             throw new ArtistException("Error while count artist.", e);

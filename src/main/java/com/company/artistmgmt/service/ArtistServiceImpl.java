@@ -13,20 +13,17 @@ import com.company.artistmgmt.repository.ArtistRepo;
 import com.opencsv.CSVWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.company.artistmgmt.mapper.ArtistMapper.toArtistDto;
 import static com.company.artistmgmt.mapper.ArtistMapper.toArtistEntity;
-import static com.company.artistmgmt.util.PaginationUtils.validateAndSetDefaults;
+import static com.company.artistmgmt.repository.QueryConst.*;
+import static com.company.artistmgmt.util.MetaUtils.extractedMeta;
 
 @Service
 public class ArtistServiceImpl implements ArtistService {
@@ -56,7 +53,7 @@ public class ArtistServiceImpl implements ArtistService {
         logger.debug("Updating artist with id {} : Payload:{}", id, artistDto);
         validateId(id);
 
-        if (!artistRepo.checkArtistExistsById(id)) {
+        if (artistRepo.checkArtistExistsById(id)) {
             throw new ResourceNotFoundException("User with ID " + id + " not found");
         }
         validateArtistDto(artistDto);
@@ -87,24 +84,19 @@ public class ArtistServiceImpl implements ArtistService {
 
         // Add pagination details to response
         BaseResponse<List<ArtistDto>> response = new BaseResponse<>();
-        response.setSuccess(true);
-        response.setTimestamp(LocalDateTime.now());
-        response.setMessage("Artist Fetch successfully");
-        response.setStatusCode(HttpStatus.OK.value());
+        response.setMessage(ARTIST_SUCCESS_MSG);
         response.setDataResponse(artistDtos);
-        response.addMeta("totalCount", totalCount);
-        response.addMeta("totalPages", (int) Math.ceil((double) totalCount / pageSize));
-        response.addMeta("currentPage", pageNo);
-        response.addMeta("pageSize", pageSize);
+        extractedMeta(pageNo, pageSize, response, totalCount);
         return response;
     }
+
 
     @Override
     public BaseResponse<Integer> deleteArtist(int artistId) throws ArtistException {
         logger.debug("Deleting artist with id {} ", artistId);
         validateId(artistId);
 
-        if (!artistRepo.checkArtistExistsById(artistId)) {
+        if (artistRepo.checkArtistExistsById(artistId)) {
             throw new ResourceNotFoundException("Artist with ID " + artistId + " not found");
         }
         if (!artistRepo.deleteArtist(artistId)) {
@@ -117,7 +109,7 @@ public class ArtistServiceImpl implements ArtistService {
     public BaseResponse<ArtistDto> getArtistById(int id) throws ArtistException {
         logger.debug("Getting artist by id:{}", id);
         validateId(id);
-        if (!artistRepo.checkArtistExistsById(id)) {
+        if (artistRepo.checkArtistExistsById(id)) {
             throw new ResourceNotFoundException("Artist with ID " + id + " not found");
         }
         Artist artistById = artistRepo.getArtistById(id);
@@ -189,7 +181,7 @@ public class ArtistServiceImpl implements ArtistService {
         if (artistDto.getNoOfAlbumsReleased() < 0) {
             throw new ValidationException("Number of albums released cannot be negative.");
         }
-        if (artistDto.getGender() != null && !Gender.isValid(artistDto.getGender().name())) {
+        if (artistDto.getGender() != null && Gender.isValid(artistDto.getGender().name())) {
             throw new ValidationException("Invalid gender value");
         }
     }
