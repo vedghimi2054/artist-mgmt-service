@@ -15,7 +15,8 @@ import javax.sql.DataSource;
 import java.sql.*;
 import java.util.List;
 
-import static com.company.artistmgmt.repository.QueryConst.QUERY;
+import static com.company.artistmgmt.repository.QueryConst.*;
+import static com.company.artistmgmt.repository.QueryConst.ARTIST_TABLE;
 
 @Repository
 public class MusicRepoImpl implements MusicRepo {
@@ -97,7 +98,7 @@ public class MusicRepoImpl implements MusicRepo {
     }
 
     @Override
-    public List<Music> getSongsByArtist(int artistId, int pageNo, int pageSize) throws ArtistException {
+    public List<Music> getSongsByArtist(int artistId, int validatePageSize, int offset) throws ArtistException {
         logger.debug("Getting songs by artist with: Payload:{}", artistId);
         String query = "SELECT * FROM music WHERE artist_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
 
@@ -105,8 +106,8 @@ public class MusicRepoImpl implements MusicRepo {
              PreparedStatement statement = connection.prepareStatement(query)) {
             logger.debug(QUERY, query);
             statement.setInt(1, artistId);
-            statement.setInt(2, pageSize);
-            statement.setInt(3, pageNo);
+            statement.setInt(2, validatePageSize);
+            statement.setInt(3, offset);
             return resultSet.getResults(statement.executeQuery(), this::extractMusicInfo);
         } catch (SQLException e) {
             throw new ArtistException("Error while fetching songs for artist.", e);
@@ -126,6 +127,20 @@ public class MusicRepoImpl implements MusicRepo {
             return resultSet.getResult(statement.executeQuery(), this::extractMusicInfo);
         } catch (SQLException e) {
             throw new ArtistException("Error while fetching song by ID.", e);
+        }
+    }
+
+    @Override
+    public long countSongsByArtist(int artistId) throws ArtistException {
+        logger.debug("Count Songs by artistId:{}:", artistId);
+        var query = SELECT + "COUNT(id)" + FROM + MUSIC_TABLE + WHERE + "artist_id =?";
+        try (var connection = dataSource.getConnection();
+             var statement = connection.prepareStatement(query)) {
+            logger.debug(QUERY, query);
+            statement.setInt(1, artistId);
+            return resultSet.count(statement.executeQuery());
+        } catch (SQLException e) {
+            throw new ArtistException("Error while count music.", e);
         }
     }
 

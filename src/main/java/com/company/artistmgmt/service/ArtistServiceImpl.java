@@ -13,16 +13,20 @@ import com.company.artistmgmt.repository.ArtistRepo;
 import com.opencsv.CSVWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Writer;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.company.artistmgmt.mapper.ArtistMapper.toArtistDto;
 import static com.company.artistmgmt.mapper.ArtistMapper.toArtistEntity;
+import static com.company.artistmgmt.util.PaginationUtils.validateAndSetDefaults;
 
 @Service
 public class ArtistServiceImpl implements ArtistService {
@@ -69,9 +73,30 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     public BaseResponse<List<ArtistDto>> getAllArtists(int pageNo, int pageSize) throws ArtistException {
         logger.debug("Getting all artist with pageNo:{} and pageSize:{}", pageNo, pageSize);
-        List<Artist> allArtists = artistRepo.getAllArtists(pageNo, pageSize);
-        List<ArtistDto> collect = allArtists.stream().map(ArtistMapper::toArtistDto).collect(Collectors.toList());
-        return new BaseResponse<>(true, collect);
+        // Validate and set default pagination values
+        if (pageNo < 0 || pageSize <= 0) {
+            throw new ValidationException("pageNo must be >= 0 and pageSize must be > 0");
+        }
+        // Calculate offset
+        int offset = pageNo * pageSize;
+        List<Artist> allArtists = artistRepo.getAllArtists(pageSize, offset);
+        long totalCount = artistRepo.getArtistCount(); // Get total count
+        List<ArtistDto> artistDtos = allArtists.stream()
+                .map(ArtistMapper::toArtistDto)
+                .collect(Collectors.toList());
+
+        // Add pagination details to response
+        BaseResponse<List<ArtistDto>> response = new BaseResponse<>();
+        response.setSuccess(true);
+        response.setTimestamp(LocalDateTime.now());
+        response.setMessage("Artist Fetch successfully");
+        response.setStatusCode(HttpStatus.OK.value());
+        response.setDataResponse(artistDtos);
+        response.addMeta("totalCount", totalCount);
+        response.addMeta("totalPages", (int) Math.ceil((double) totalCount / pageSize));
+        response.addMeta("currentPage", pageNo);
+        response.addMeta("pageSize", pageSize);
+        return response;
     }
 
     @Override

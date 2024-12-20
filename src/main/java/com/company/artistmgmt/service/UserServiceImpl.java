@@ -1,5 +1,6 @@
 package com.company.artistmgmt.service;
 
+import com.company.artistmgmt.dto.MusicDto;
 import com.company.artistmgmt.dto.UserDto;
 import com.company.artistmgmt.exception.ArtistException;
 import com.company.artistmgmt.exception.FailedException;
@@ -13,13 +14,16 @@ import com.company.artistmgmt.model.general.Role;
 import com.company.artistmgmt.repository.UserRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.company.artistmgmt.mapper.UserMapper.toUserDto;
 import static com.company.artistmgmt.mapper.UserMapper.toUserEntity;
+import static com.company.artistmgmt.util.PaginationUtils.validateAndSetDefaults;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -80,9 +84,26 @@ public class UserServiceImpl implements UserService {
     @Override
     public BaseResponse<List<UserDto>> getAllUsers(int pageNo, int pageSize) throws ArtistException {
         logger.debug("Getting all user Payload:{}", pageNo);
-        List<User> allUsers = userRepository.getAllUsers(pageNo, pageSize);
-        List<UserDto> collect = allUsers.stream().map(UserMapper::toUserDto).collect(Collectors.toList());
-        return new BaseResponse<>(true, collect);
+        // Validate and set default pagination values
+        if (pageNo < 0 || pageSize <= 0) {
+            throw new ValidationException("pageNo must be >= 0 and pageSize must be > 0");
+        }
+        // Calculate offset
+        int offset = pageNo * pageSize;
+        List<User> allUsers = userRepository.getAllUsers(pageSize, offset);
+        long totalCount = userRepository.countTotalUsers();
+        List<UserDto> userDtoList = allUsers.stream().map(UserMapper::toUserDto).collect(Collectors.toList());
+        BaseResponse<List<UserDto>> response = new BaseResponse<>();
+        response.setSuccess(true);
+        response.setTimestamp(LocalDateTime.now());
+        response.setMessage("User Fetch successfully");
+        response.setStatusCode(HttpStatus.OK.value());
+        response.setDataResponse(userDtoList);
+        response.addMeta("totalCount", totalCount);
+        response.addMeta("totalPages", (int) Math.ceil((double) totalCount / pageSize));
+        response.addMeta("currentPage", pageNo);
+        response.addMeta("pageSize", pageSize);
+        return response;
     }
 
     @Override

@@ -80,7 +80,7 @@ public class ArtistRepoImpl implements ArtistRepo {
             statement.setInt(1, id);
             return resultSet.count(statement.executeQuery()) > 0;
         } catch (SQLException e) {
-            throw new ArtistException(e);
+            throw new ArtistException("Error while checking artist exists by id.", e);
         }
     }
 
@@ -138,14 +138,14 @@ public class ArtistRepoImpl implements ArtistRepo {
     }
 
     @Override
-    public List<Artist> getAllArtists(int pageNo, int pageSize) throws ArtistException {
-        logger.debug("Getting all users:");
+    public List<Artist> getAllArtists(int validatePageSize, int offset) throws ArtistException {
+        logger.debug("Getting all users with validatePageSize{}: and offset:{}", validatePageSize, offset);
         var query = "SELECT * FROM artist ORDER BY created_at DESC LIMIT ? OFFSET ?";
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
             logger.debug(QUERY, query);
-            statement.setInt(1, pageSize);
-            statement.setInt(2, pageNo);
+            statement.setInt(1, validatePageSize);
+            statement.setInt(2, offset);
             return resultSet.getResults(statement.executeQuery(), this::extractArtistInfo);
         } catch (SQLException e) {
             throw new ArtistException(e);
@@ -163,6 +163,19 @@ public class ArtistRepoImpl implements ArtistRepo {
             return resultSet.getResult(statement.executeQuery(), this::extractArtistInfo);
         } catch (SQLException e) {
             throw new ArtistException(e);
+        }
+    }
+
+    @Override
+    public long getArtistCount() throws ArtistException {
+        logger.debug("Count Artist:");
+        var query = SELECT + "COUNT(id)" + FROM + ARTIST_TABLE;
+        try (var connection = dataSource.getConnection();
+             var statement = connection.prepareStatement(query)) {
+            logger.debug(QUERY, query);
+            return resultSet.count(statement.executeQuery());
+        } catch (SQLException e) {
+            throw new ArtistException("Error while count artist.", e);
         }
     }
 

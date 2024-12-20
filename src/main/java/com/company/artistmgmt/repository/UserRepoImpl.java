@@ -21,6 +21,7 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import static com.company.artistmgmt.repository.QueryConst.*;
+import static com.company.artistmgmt.repository.QueryConst.QUERY;
 
 @Repository
 public class UserRepoImpl implements UserRepo {
@@ -36,14 +37,14 @@ public class UserRepoImpl implements UserRepo {
     }
 
     @Override
-    public List<User> getAllUsers(int pageNo, int pageSize) throws ArtistException {
-        logger.debug("Getting all users:{}", pageNo);
+    public List<User> getAllUsers(int validatedPageSize, int offset) throws ArtistException {
+        logger.debug("Getting all users:{}", validatedPageSize);
         var query = "SELECT * FROM user ORDER BY created_at DESC LIMIT ? OFFSET ?";
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
             logger.debug(QUERY, query);
-            statement.setInt(1, pageSize);
-            statement.setInt(2, pageNo * pageSize);
+            statement.setInt(1, validatedPageSize);
+            statement.setInt(2, offset);
             return resultSet.getResults(statement.executeQuery(), this::extractUserInfo);
         } catch (SQLException e) {
             throw new ArtistException(e);
@@ -172,6 +173,19 @@ public class UserRepoImpl implements UserRepo {
             return resultSet.getResult(statement.executeQuery(), this::extractUserInfo);
         } catch (SQLException e) {
             throw new ArtistException(e);
+        }
+    }
+
+    @Override
+    public long countTotalUsers() throws ArtistException {
+        logger.debug("Count Total users");
+        var query = SELECT + "COUNT(id)" + FROM + USER_TABLE;
+        try (var connection = dataSource.getConnection();
+             var statement = connection.prepareStatement(query)) {
+            logger.debug(QUERY, query);
+            return resultSet.count(statement.executeQuery());
+        } catch (SQLException e) {
+            throw new ArtistException("Error while count user.", e);
         }
     }
 

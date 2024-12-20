@@ -36,7 +36,7 @@ public class ArtistController {
     @GetMapping
 //    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ARTIST_MANAGER')")
     public ResponseEntity<BaseResponse<List<ArtistDto>>> listArtists(
-            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue ="0") int pageNo,
             @RequestParam(defaultValue = "10") int pageSize) {
         try {
             BaseResponse<List<ArtistDto>> artists = artistService.getAllArtists(pageNo, pageSize);
@@ -153,6 +153,7 @@ public class ArtistController {
             );
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
+        return null;
     }
 }
 

@@ -6,7 +6,7 @@ import com.company.artistmgmt.model.Artist;
 import java.util.List;
 
 public interface ArtistRepo {
-    List<Artist> getAllArtists(int pageNo, int pageSize) throws ArtistException;
+    List<Artist> getAllArtists(int validatePageSize, int offset) throws ArtistException;
 
     Artist createArtist(Artist artistEntity) throws ArtistException;
 
@@ -17,5 +17,6 @@ public interface ArtistRepo {
     boolean deleteArtist(int id);
 
     Artist getArtistById(int id) throws ArtistException;
+    long getArtistCount() throws ArtistException;
 
 }

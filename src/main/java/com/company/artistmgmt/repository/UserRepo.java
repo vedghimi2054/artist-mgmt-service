@@ -6,7 +6,7 @@ import com.company.artistmgmt.model.User;
 import java.util.List;
 
 public interface UserRepo {
-    List<User> getAllUsers(int pageNo, int pageSize) throws ArtistException;
+    List<User> getAllUsers(int validatedPageSize, int offset) throws ArtistException;
 
     User createUser(User userEntity) throws ArtistException;
 
@@ -18,4 +18,5 @@ public interface UserRepo {
 
     User getUserById(int id) throws ArtistException;
 
+    long countTotalUsers() throws ArtistException;
 }

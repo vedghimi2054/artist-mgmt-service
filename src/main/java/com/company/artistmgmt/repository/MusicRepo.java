@@ -6,7 +6,7 @@ import com.company.artistmgmt.model.Music;
 import java.util.List;
 
 public interface MusicRepo {
-    List<Music> getSongsByArtist(int artistId, int pageNo, int pageSize) throws ArtistException;
+    List<Music> getSongsByArtist(int artistId, int validatePageSize, int offset) throws ArtistException;
 
     Music createSongForArtist(int artistId, Music musicEntity) throws ArtistException;
 
@@ -18,4 +18,5 @@ public interface MusicRepo {
 
     Music getSongById(int id, int artistId) throws ArtistException;
 
+    long countSongsByArtist(int artistId) throws ArtistException;
 }
