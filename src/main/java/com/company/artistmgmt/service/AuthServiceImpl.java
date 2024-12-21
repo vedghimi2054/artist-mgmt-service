@@ -47,6 +47,7 @@ public class AuthServiceImpl implements AuthService {
         LoginTokenDto loginTokenDto = new LoginTokenDto();
         loginTokenDto.setUserId(user.getId());
         loginTokenDto.setToken(token);
+        loginTokenDto.setRole(user.getRole());
         loginTokenDto.setFirstName(user.getFirstName());
         loginTokenDto.setLastName(user.getLastName());
         loginTokenDto.setEmail(user.getUsername());

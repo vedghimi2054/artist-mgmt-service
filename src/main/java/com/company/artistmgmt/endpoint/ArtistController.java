@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -140,21 +141,33 @@ public class ArtistController {
     // Export artists to CSV
     @GetMapping("/export")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','ARTIST_MANAGER')")
-    public ResponseEntity<BaseResponse<ArtistDto>> exportToCsv() {
-        String filePath = "/home/sushil/Documents/cloco-project/artist-mgmt-service/_user__202412211048.csv";
-        String fileUrl = "http://localhost:8080/artists/download/artists.csv"; // Update with your server's base URL
+    public ResponseEntity<BaseResponse<Object>> exportToCsv() {
+        String fileName = "artists.csv";
+        String filePath = "src/main/resources/static/csv/" + fileName; // Save in static/csv
 
         try {
-            // Export to CSV and save the file
+            // Export artists to CSV
             artistService.exportArtistsToCsv(filePath);
-            // Create a success response
-            BaseResponse<ArtistDto> response = new BaseResponse<>(true, "CSV export successfully.");
+
+            // Dynamically build the file URL
+            String fileUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/csv/")
+                    .path(fileName)
+                    .toUriString();
+
+            // Return success response with the file URL
+            BaseResponse<Object> response = new BaseResponse<>(
+                    true,
+                    "CSV exported successfully."
+            );
             response.addMeta("fileURL", fileUrl);
+
             return ResponseEntity.ok(response);
-        } catch (ArtistException e) {
-            BaseResponse<ArtistDto> errorResponse = new BaseResponse<>(
+        } catch (ArtistException ex) {
+            // Return error response
+            BaseResponse<Object> errorResponse = new BaseResponse<>(
                     HttpStatus.BAD_REQUEST.value(),
-                    e.getMessage()
+                    ex.getMessage()
             );
             return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }

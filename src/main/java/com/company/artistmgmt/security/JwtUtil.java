@@ -106,7 +106,7 @@ public class JwtUtil {
             return Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token);
         } catch (JwtException e) {
             log.error("Error while parsing jwt token");
-            throw new ExpiredJwtException(null,null,"Ssss",e);
+            throw new ExpiredJwtException(null, null, "Token expire.", e);
         }
     }
 

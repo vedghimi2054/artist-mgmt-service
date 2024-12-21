@@ -69,7 +69,7 @@ public class UserController {
      * @param userDto the user DTO
      * @return the created user
      */
-    @PostMapping("/save")
+    @PostMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     public ResponseEntity<BaseResponse<UserResDto>> createUser(@Valid @RequestBody UserReqDto userDto) {
         try {
