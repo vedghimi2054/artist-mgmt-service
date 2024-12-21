@@ -2,14 +2,15 @@ package com.company.artistmgmt.security;
 
 import com.company.artistmgmt.constant.AppConstant;
 import com.company.artistmgmt.exception.ArtistException;
+import com.company.artistmgmt.exception.AuthException;
 import com.company.artistmgmt.exception.ResourceNotFoundException;
 import com.company.artistmgmt.model.User;
 import com.company.artistmgmt.repository.UserRepo;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -27,6 +28,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Getter
 @Component
 @RequiredArgsConstructor
@@ -92,12 +94,21 @@ public class JwtUtil {
     }
 
     public Claims extractAllClaims(String token) {
-        return Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token).getPayload();
+        return getParseJWTToken(token).getPayload();
     }
 
     private <T> T extractClaims(String token, Function<Claims, T> claimsTFunction) {
         return claimsTFunction
-                .apply(Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token).getPayload());
+                .apply(getParseJWTToken(token).getPayload());
+    }
+
+    private Jws<Claims> getParseJWTToken(String token) {
+        try {
+            return Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token);
+        } catch (JwtException e) {
+            log.error("Error while parsing jwt token");
+            throw new ExpiredJwtException(null,null,"Ssss",e);
+        }
     }
 
     public String extractUsername(String token) {

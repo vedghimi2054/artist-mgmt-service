@@ -1,11 +1,9 @@
 package com.company.artistmgmt.security;
 
-import com.company.artistmgmt.model.BaseResponse;
+import com.company.artistmgmt.exception.AuthException;
 import com.company.artistmgmt.service.UserLoadServiceImpl;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
@@ -13,7 +11,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,7 +22,6 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 
 @Component
@@ -43,39 +39,44 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        ServletContext servletContext = request.getServletContext();
-        WebApplicationContext webApplicationContext = WebApplicationContextUtils.getWebApplicationContext(servletContext);
-        assert webApplicationContext != null;
-        userLoadService = webApplicationContext.getBean(UserLoadServiceImpl.class);
+        try {
+            ServletContext servletContext = request.getServletContext();
+            WebApplicationContext webApplicationContext = WebApplicationContextUtils.getWebApplicationContext(servletContext);
+            assert webApplicationContext != null;
+            userLoadService = webApplicationContext.getBean(UserLoadServiceImpl.class);
 
-        final String authHeader = request.getHeader(HEADER);
-        if (authHeader == null || !authHeader.startsWith(PREFIX)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        final String jwtToken = getToken(request);
-        final String username = jwtUtil.extractUsername(jwtToken);
-
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userLoadService.loadUserByUsername(username);
-            if (jwtUtil.isTokenValid(jwtToken, userDetails)) {
-                Claims claims = jwtUtil.extractAllClaims(jwtToken);
-
-                @SuppressWarnings("unchecked")
-                List<String> roles = (List<String>) claims.get("role");
-                List<SimpleGrantedAuthority> authorities = roles.stream()
-                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                        .toList();
-                logger.info("Extracted roles: " + authorities);
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, authorities);
-
-                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            final String authHeader = request.getHeader(HEADER);
+            if (authHeader == null || !authHeader.startsWith(PREFIX)) {
+                filterChain.doFilter(request, response);
+                return;
             }
-        } else {
-            SecurityContextHolder.clearContext();
+
+            final String jwtToken = getToken(request);
+            final String username = jwtUtil.extractUsername(jwtToken);
+
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = userLoadService.loadUserByUsername(username);
+                if (jwtUtil.isTokenValid(jwtToken, userDetails)) {
+                    Claims claims = jwtUtil.extractAllClaims(jwtToken);
+
+                    @SuppressWarnings("unchecked")
+                    List<String> roles = (List<String>) claims.get("role");
+                    List<SimpleGrantedAuthority> authorities = roles.stream()
+                            .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                            .toList();
+                    logger.info("Extracted roles: " + authorities);
+                    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, authorities);
+
+                    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                }
+            } else {
+                SecurityContextHolder.clearContext();
+
+            }
+        } catch (ExpiredJwtException ex) {
+            SecurityContextHolder.createEmptyContext();
         }
         filterChain.doFilter(request, response);
     }

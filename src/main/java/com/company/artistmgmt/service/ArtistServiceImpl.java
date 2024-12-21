@@ -10,14 +10,17 @@ import com.company.artistmgmt.model.Artist;
 import com.company.artistmgmt.model.BaseResponse;
 import com.company.artistmgmt.model.general.Gender;
 import com.company.artistmgmt.repository.ArtistRepo;
-import com.opencsv.CSVWriter;
+import com.company.artistmgmt.util.ImportArtistUtils;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -119,27 +122,28 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     public void exportArtistsToCsv(String filePath) throws ArtistException {
-        List<Artist> artists = artistRepo.getAllArtists(0, 10);
-
+        logger.debug("Getting all artists.");
+        var artists = artistRepo.getAllArtists(0, 10);
         try (Writer writer = new FileWriter(filePath);
-             CSVWriter csvWriter = new CSVWriter(writer)) {
-            // Write CSV header
-            String[] header = {"ID", "Name", "DOB", "Gender", "Address", "First Release Year", "No of Albums Released"};
-            csvWriter.writeNext(header);
+             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(
+                     "ID", "Name", "DOB", "Gender", "Address", "First Release Year", "No of Albums Released"))) {
 
-            // Write artist data
+            // Write artist data rows
             for (Artist artist : artists) {
-                String[] data = {
-                        String.valueOf(artist.getId()),
+                csvPrinter.printRecord(
+                        artist.getId(),
                         artist.getName(),
-                        String.valueOf(artist.getDob()),
+                        artist.getDob(),
                         artist.getGender().toString(),
                         artist.getAddress(),
-                        String.valueOf(artist.getFirstReleaseYear()),
-                        String.valueOf(artist.getNoOfAlbumsReleased())
-                };
-                csvWriter.writeNext(data);
+                        artist.getFirstReleaseYear(),
+                        artist.getNoOfAlbumsReleased()
+                );
             }
+
+            // Ensure data is written to the file
+            csvPrinter.flush();
+
         } catch (IOException e) {
             throw new ArtistException("Failed to export CSV file", e);
         }
@@ -147,40 +151,53 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     public BaseResponse<ArtistDto> importArtistsFromCsv(MultipartFile file) throws ArtistException {
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
-            String line;
-            boolean isFirstLine = true; // To skip the header
+        logger.debug("Importing artists from CSV.");
 
-            while ((line = br.readLine()) != null) {
-                if (isFirstLine) {
-                    isFirstLine = false;
-                    continue; // Skip header
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
+             CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader()
+                     .withQuote('"')  // Handle quoted values properly
+                     .withEscape('\\')
+                     .withDelimiter(',')
+                     .withIgnoreEmptyLines())) {
+
+            // Loop through the records in the CSV file
+            for (CSVRecord record : csvParser) {
+                // Skip if header or invalid data is encountered (it's already handled by withFirstRecordAsHeader)
+                if (record.size() < 7) {
+                    continue; // Skip the record if it doesn't have enough columns
                 }
 
-                // Split CSV line into columns
-                String[] columns = line.split(",");
+                // Create and save artist entity from CSV columns
+                Artist artist = extractArtistRecord(record);
 
-                // Create and save artist entity
-                Artist artist = new Artist();
-                artist.setId(Integer.parseInt(columns[0].replace("\"", "").trim()));
-                artist.setName(columns[1].replace("\"", "").trim());
-                artist.setDob(LocalDateTime.parse(columns[2].replace("\"", "").trim()));
-                artist.setGender(Gender.valueOf(columns[3].replace("\"", "").trim().toUpperCase()));
-                artist.setAddress(columns[4].replace("\"", "").trim());
-                artist.setFirstReleaseYear(Integer.parseInt(columns[5].replace("\"", "").trim()));
-                artist.setNoOfAlbumsReleased(Integer.parseInt(columns[6].replace("\"", "").trim()));
-
+                // Save the artist to the database
                 Artist createdArtist = artistRepo.createArtist(artist);
                 Artist artistById = artistRepo.getArtistById(createdArtist.getId());
                 ArtistDto dto = toArtistDto(artistById);
                 return new BaseResponse<>(true, dto);
             }
+
         } catch (IOException e) {
-            throw new ArtistException("Failed to process the CSV file.", e);
+            throw new ArtistException("Failed to process the CSV file." + e.getMessage(), e);
         } catch (Exception e) {
-            throw new ArtistException("Invalid data format in the CSV file.", e);
+            throw new ArtistException("Invalid data format in the CSV file." + e.getMessage(), e);
         }
+
         return null;
+
+    }
+
+    private static Artist extractArtistRecord(CSVRecord record) {
+
+        Artist artist = new Artist();
+        artist.setId(ImportArtistUtils.parseNumber(record.get(0)));
+        artist.setName(ImportArtistUtils.getValidteString(record.get(1)));
+        artist.setDob(ImportArtistUtils.parseDOB(record.get(2)));
+        artist.setGender(ImportArtistUtils.parseGender(record.get(3)));
+        artist.setAddress(ImportArtistUtils.getValidteString(record.get(4)));
+        artist.setFirstReleaseYear(ImportArtistUtils.parseNumber(record.get(5)));
+        artist.setNoOfAlbumsReleased(ImportArtistUtils.parseNumber(record.get(6)));
+        return artist;
     }
 
     /**

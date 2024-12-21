@@ -1,5 +1,7 @@
 package com.company.artistmgmt.model;
 
+import com.company.artistmgmt.helper.JsonHelper;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -7,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BaseResponse<T> {
     private boolean success;
     private int statusCode;
@@ -21,13 +24,13 @@ public class BaseResponse<T> {
     }
 
     public BaseResponse(boolean success, String message) {
-       super();
+        super();
         this.success = success;
         this.message = message;
     }
 
     public BaseResponse(boolean success, T dataResponse) {
-       super();
+        super();
         this.success = success;
         this.timestamp = LocalDateTime.now();
         this.error = false;
@@ -47,7 +50,14 @@ public class BaseResponse<T> {
     }
 
     public void addMeta(String key, Object value) {
+        if (meta == null) {
+            this.meta = new HashMap<>();
+        }
         this.meta.put(key, value);
     }
 
+//    @Override
+//    public String toString() {
+//        return JsonHelper.serialize(this);
+//    }
 }

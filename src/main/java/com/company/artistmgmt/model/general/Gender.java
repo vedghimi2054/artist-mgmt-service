@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum Gender {
+    GENDER_UNSPECIFIED(0),
     MALE(1),
     FEMALE(2),
     OTHER(3);
@@ -25,6 +26,7 @@ public enum Gender {
             return true;
         }
     }
+
     public static Gender fromValue(int value) {
         for (Gender gender : Gender.values()) {
             if (gender.getValue() == value) {
