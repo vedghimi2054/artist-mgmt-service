@@ -12,7 +12,7 @@ public interface ArtistRepo {
 
     boolean checkArtistExistsById(int id) throws ArtistException;
 
-    boolean updateArtist(int id, Artist ArtistEntity);
+    boolean updateArtist(int id, Artist artistEntity);
 
     boolean deleteArtist(int id);
 

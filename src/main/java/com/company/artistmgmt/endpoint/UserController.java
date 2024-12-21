@@ -137,6 +137,7 @@ public class UserController {
      * @return the user details
      */
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     public ResponseEntity<BaseResponse<UserResDto>> getUserById(@PathVariable int id) {
         try {
             BaseResponse<UserResDto> user = userService.getUserById(id);

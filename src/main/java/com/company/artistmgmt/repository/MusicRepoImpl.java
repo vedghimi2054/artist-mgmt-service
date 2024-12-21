@@ -54,7 +54,7 @@ public class MusicRepoImpl implements MusicRepo {
                 }
             }
         } catch (SQLException e) {
-            throw new ArtistException("Error while creating song for artist.", e);
+            throw new ArtistException("Error while creating song for artist."+ e.getMessage(), e);
         }
         return musicEntity;
     }
@@ -76,7 +76,7 @@ public class MusicRepoImpl implements MusicRepo {
 
             return statement.executeUpdate() == 1;
         } catch (SQLException e) {
-            throw new ArtistException("Error while updating song for artist.", e);
+            throw new ArtistException("Error while updating song for artist."+ e.getMessage(), e);
         }
     }
 
@@ -111,7 +111,7 @@ public class MusicRepoImpl implements MusicRepo {
             statement.setInt(3, offset);
             return resultSet.getResults(statement.executeQuery(), this::extractMusicInfo);
         } catch (SQLException e) {
-            throw new ArtistException("Error while fetching songs for artist.", e);
+            throw new ArtistException("Error while fetching songs for artist."+ e.getMessage(), e);
         }
     }
 
@@ -127,7 +127,7 @@ public class MusicRepoImpl implements MusicRepo {
             statement.setInt(2, artistId);
             return resultSet.getResult(statement.executeQuery(), this::extractMusicInfo);
         } catch (SQLException e) {
-            throw new ArtistException("Error while fetching song by ID.", e);
+            throw new ArtistException("Error while fetching song by ID."+ e.getMessage(), e);
         }
     }
 
@@ -157,7 +157,7 @@ public class MusicRepoImpl implements MusicRepo {
             statement.setInt(2, artistId);
             return resultSet.count(statement.executeQuery()) <= 0;
         } catch (SQLException e) {
-            throw new ArtistException("Error while fetching song by ID.", e);
+            throw new ArtistException("Error while fetching song by ID."+ e.getMessage(), e);
         }
     }
 
@@ -181,7 +181,7 @@ public class MusicRepoImpl implements MusicRepo {
 
             return music;
         } catch (Exception ex) {
-            throw new ArtistRuntimeException("Error while extracting music info.", ex);
+            throw new ArtistRuntimeException("Error while extracting music info."+ ex.getMessage(), ex);
         }
     }
 }

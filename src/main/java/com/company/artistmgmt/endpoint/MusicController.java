@@ -105,7 +105,7 @@ public class MusicController {
      * @return a success response
      */
     @DeleteMapping("/artist/{artistId}/{id}")
-    @PreAuthorize("hasAnyRole('ARTIST')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ARTIST')")
     public ResponseEntity<BaseResponse<Integer>> deleteSongForArtist(
             @PathVariable int artistId, @PathVariable int id) {
         try {

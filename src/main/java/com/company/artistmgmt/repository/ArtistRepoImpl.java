@@ -65,7 +65,7 @@ public class ArtistRepoImpl implements ArtistRepo {
                 }
             }
         } catch (SQLException e) {
-            throw new ArtistException("Error while create artist.", e);
+            throw new ArtistException("Error while create artist." + e.getMessage(), e);
         }
         return artistEntity;
     }
@@ -80,7 +80,7 @@ public class ArtistRepoImpl implements ArtistRepo {
             statement.setInt(1, id);
             return resultSet.count(statement.executeQuery()) <= 0;
         } catch (SQLException e) {
-            throw new ArtistException("Error while checking artist exists by id.", e);
+            throw new ArtistException("Error while checking artist exists by id."+ e.getMessage(), e);
         }
     }
 
@@ -118,7 +118,7 @@ public class ArtistRepoImpl implements ArtistRepo {
 
         } catch (SQLException e) {
             logger.error("Error while updating artist with ID: {}", id, e);
-            throw new ArtistRuntimeException("Error while updating artist.", e);
+            throw new ArtistRuntimeException("Error while updating artist."+ e.getMessage(), e);
         }
     }
 
@@ -175,7 +175,7 @@ public class ArtistRepoImpl implements ArtistRepo {
             logger.debug(QueryConst.QUERY, query);
             return resultSet.count(statement.executeQuery());
         } catch (SQLException e) {
-            throw new ArtistException("Error while count artist.", e);
+            throw new ArtistException("Error while count artist."+ e.getMessage(), e);
         }
     }
 
@@ -207,7 +207,7 @@ public class ArtistRepoImpl implements ArtistRepo {
 
             return artist;
         } catch (Exception ex) {
-            throw new ArtistRuntimeException("Error while extracting artist info.", ex);
+            throw new ArtistRuntimeException("Error while extracting artist info."+ ex.getMessage(), ex);
         }
     }
 

@@ -141,7 +141,7 @@ public class UserRepoImpl implements UserRepo {
 
         } catch (SQLException e) {
             logger.error("Error while updating user with ID: {}", id, e);
-            throw new ArtistRuntimeException("Error while updating user.", e);
+            throw new ArtistRuntimeException("Error while updating user."+ e.getMessage(), e);
         }
     }
 
@@ -183,7 +183,7 @@ public class UserRepoImpl implements UserRepo {
             logger.debug(QueryConst.QUERY, query);
             return resultSet.count(statement.executeQuery());
         } catch (SQLException e) {
-            throw new ArtistException("Error while count user.", e);
+            throw new ArtistException("Error while count user."+ e.getMessage(), e);
         }
     }
 
@@ -195,10 +195,9 @@ public class UserRepoImpl implements UserRepo {
              var statement = connection.prepareStatement(query)) {
             logger.debug(QueryConst.QUERY, query);
             statement.setString(1, email);
-            logger.debug("Execute query:{}", statement.toString());
             return resultSet.getResult(statement.executeQuery(), this::extractUserInfo);
         } catch (SQLException e) {
-            throw new ArtistException("Error while find user by email.", e);
+            throw new ArtistException("Error while find user by email."+ e.getMessage(), e);
         }
     }
 
@@ -238,7 +237,7 @@ public class UserRepoImpl implements UserRepo {
             }
             return user;
         } catch (Exception ex) {
-            throw new ArtistRuntimeException("Error while extract user info.", ex);
+            throw new ArtistRuntimeException("Error while extract user info."+ ex.getMessage(), ex);
         }
     }
 }

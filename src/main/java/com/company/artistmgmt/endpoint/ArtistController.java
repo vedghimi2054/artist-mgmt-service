@@ -58,7 +58,7 @@ public class ArtistController {
      * @return the created artist
      */
     @PostMapping
-    @PreAuthorize("hasRole('ARTIST_MANAGER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ARTIST_MANAGER')")
     public ResponseEntity<BaseResponse<ArtistDto>> createArtist(@Valid @RequestBody ArtistDto artistDto) {
         try {
             BaseResponse<ArtistDto> createdArtist = artistService.createArtist(artistDto);
@@ -80,7 +80,7 @@ public class ArtistController {
      * @return the updated artist
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ARTIST_MANAGER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ARTIST_MANAGER')")
     public ResponseEntity<BaseResponse<ArtistDto>> updateArtist(@PathVariable int id, @Valid @RequestBody ArtistDto artistDto) {
         try {
             BaseResponse<ArtistDto> updatedArtist = artistService.updateArtist(id, artistDto);
@@ -101,7 +101,7 @@ public class ArtistController {
      * @return a success response
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ARTIST_MANAGER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ARTIST_MANAGER')")
     public ResponseEntity<BaseResponse<Integer>> deleteArtist(@PathVariable int id) {
         try {
             BaseResponse<Integer> response = artistService.deleteArtist(id);
@@ -122,7 +122,7 @@ public class ArtistController {
      * @return the artist details
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ARTIST_MANAGER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ARTIST_MANAGER')")
     public ResponseEntity<BaseResponse<ArtistDto>> getArtistById(@PathVariable int id) {
         try {
             BaseResponse<ArtistDto> artist = artistService.getArtistById(id);
@@ -139,7 +139,7 @@ public class ArtistController {
 
     // Export artists to CSV
     @GetMapping("/export")
-    @PreAuthorize("hasRole('ARTIST_MANAGER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ARTIST_MANAGER')")
     public ResponseEntity<BaseResponse<ArtistDto>> exportToCsv() {
         String filePath = "/home/prabin/Documents/cloco-project/artist-mgmt-service/artist_202412192150.csv";
         String fileUrl = "http://localhost:8080/artists/download/artists.csv"; // Update with your server's base URL
@@ -161,7 +161,7 @@ public class ArtistController {
     }
 
     @PostMapping("/import")
-    @PreAuthorize("hasRole('ARTIST_MANAGER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ARTIST_MANAGER')")
     public ResponseEntity<BaseResponse<ArtistDto>> importFromCsv(@RequestParam("file") MultipartFile file) {
         try {
             // Process the CSV file and save to the database
