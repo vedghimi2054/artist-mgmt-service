@@ -141,7 +141,7 @@ public class ArtistController {
     @GetMapping("/export")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','ARTIST_MANAGER')")
     public ResponseEntity<BaseResponse<ArtistDto>> exportToCsv() {
-        String filePath = "/home/prabin/Documents/cloco-project/artist-mgmt-service/artist_202412192150.csv";
+        String filePath = "/home/sushil/Documents/cloco-project/artist-mgmt-service/_user__202412211048.csv";
         String fileUrl = "http://localhost:8080/artists/download/artists.csv"; // Update with your server's base URL
 
         try {
@@ -162,7 +162,7 @@ public class ArtistController {
 
     @PostMapping("/import")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','ARTIST_MANAGER')")
-    public ResponseEntity<BaseResponse<ArtistDto>> importFromCsv(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<BaseResponse<ArtistDto>> importArtistFromCsv(@RequestParam("file") MultipartFile file) {
         try {
             // Process the CSV file and save to the database
             BaseResponse<ArtistDto> artistDtoBaseResponse = artistService.importArtistsFromCsv(file);

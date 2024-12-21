@@ -1,0 +1,2 @@
+"id","first_name","last_name","email","password","phone","dob","gender","address","created_at","updated_at","role"
+1,Dipan,Bhusal,dipan@gmail.com,$2a$10$gJJ4er3GVQ2xI67PxkmKhe13I23rlTLv6N4OCNv9JG7m.SYcEB8fe,"9865567891","1989-12-31 18:15:00",1,"123 Main St, City, Country","2024-12-21 09:42:14.871860","2024-12-21 10:46:05.614500",1
