@@ -1,6 +1,5 @@
 package com.company.artistmgmt.security;
 
-import com.company.artistmgmt.exception.AuthException;
 import com.company.artistmgmt.service.UserLoadServiceImpl;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -9,6 +8,7 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,7 +29,6 @@ import java.util.List;
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-
     @Autowired
     private UserLoadServiceImpl userLoadService;
 
@@ -37,7 +36,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private static final String PREFIX = "Bearer ";
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
         try {
             ServletContext servletContext = request.getServletContext();

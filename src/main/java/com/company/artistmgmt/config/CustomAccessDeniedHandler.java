@@ -1,6 +1,5 @@
 package com.company.artistmgmt.config;
 
-import com.company.artistmgmt.exception.PermissionDeniedException;
 import com.company.artistmgmt.model.BaseResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;

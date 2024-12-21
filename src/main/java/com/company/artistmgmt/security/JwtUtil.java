@@ -2,7 +2,6 @@ package com.company.artistmgmt.security;
 
 import com.company.artistmgmt.constant.AppConstant;
 import com.company.artistmgmt.exception.ArtistException;
-import com.company.artistmgmt.exception.AuthException;
 import com.company.artistmgmt.exception.ResourceNotFoundException;
 import com.company.artistmgmt.model.User;
 import com.company.artistmgmt.repository.UserRepo;
