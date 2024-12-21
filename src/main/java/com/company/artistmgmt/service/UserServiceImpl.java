@@ -33,11 +33,9 @@ import static com.company.artistmgmt.util.MetaUtils.extractedMeta;
 @RequiredArgsConstructor
 @Transactional
 public class UserServiceImpl implements UserService {
-    private static final Logger logger = LoggerFactory.getLogger(MusicServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final UserStructMapper userMapper;
-    private final JwtUtil jwtUtil;
-    private final UserLoadServiceImpl userLoadService;
     private final UserRepo userRepository;
 
     @Override
@@ -98,30 +96,6 @@ public class UserServiceImpl implements UserService {
             throw new FailedException("Failed to update user.");
         }
         return new BaseResponse<>(true, userId);
-    }
-
-    @Override
-    public BaseResponse<LoginTokenDto> login(LoginReqDto loginReqDto, HttpServletRequest request) throws ArtistException {
-        logger.debug("Login payload:{}", JsonHelper.serialize(loginReqDto));
-        User user = userRepository.findUserByEmail(loginReqDto.getEmail());
-        if (user == null) {
-            throw new ResourceNotFoundException("User not found");
-        }
-        if (!bCryptPasswordEncoder.matches(loginReqDto.getPassword(), user.getPassword())) {
-            throw new NotAllowedException("Invalid credentials");
-        }
-        HashMap<String, Object> additionalClaims = new HashMap<>();
-        additionalClaims.put("user_id", user.getId());
-        additionalClaims.put("email", user.getEmail());
-        String token = jwtUtil.generateToken(userLoadService.loadUserByUsername(loginReqDto.getEmail()), additionalClaims);
-        LoginTokenDto loginTokenDto = new LoginTokenDto();
-        loginTokenDto.setUserId(user.getId());
-        loginTokenDto.setToken(token);
-        loginTokenDto.setFirstName(user.getFirstName());
-        loginTokenDto.setLastName(user.getLastName());
-        loginTokenDto.setEmail(user.getUsername());
-        return new BaseResponse<>(true, loginTokenDto);
-
     }
 
     @Override

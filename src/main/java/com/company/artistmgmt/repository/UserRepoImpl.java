@@ -148,7 +148,7 @@ public class UserRepoImpl implements UserRepo {
     @Override
     public boolean deleteUser(int id) {
         logger.info("Deleting the user by . Id: {}", id);
-        var query = "DELETE FROM user.user where id = ?";
+        var query = "DELETE FROM user where id = ?";
         try (var connection = dataSource.getConnection();
              var statement = connection.prepareStatement(query)) {
             logger.debug(QueryConst.QUERY, query);

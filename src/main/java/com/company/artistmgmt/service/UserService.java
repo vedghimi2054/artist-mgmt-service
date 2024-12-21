@@ -51,5 +51,4 @@ public interface UserService {
      */
     BaseResponse<Integer> deleteUser(int id) throws ArtistException;
 
-    BaseResponse<LoginTokenDto> login(LoginReqDto loginReqDto, HttpServletRequest request) throws ArtistException;
 }

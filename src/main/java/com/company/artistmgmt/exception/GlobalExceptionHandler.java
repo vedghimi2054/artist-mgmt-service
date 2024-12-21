@@ -23,16 +23,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    // This handler will catch AccessDeniedException thrown by @PreAuthorize
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<BaseResponse<String>> handleAccessDeniedException(AccessDeniedException ex) {
-        BaseResponse<String> errorResponse = new BaseResponse<>(
-                HttpStatus.FORBIDDEN.value(), // 403 Forbidden
-                "User does not have permission to access this resource"
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
-    }
-
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<BaseResponse<Object>> handleUsernameNotFoundException(UsernameNotFoundException ex) {
         BaseResponse<Object> errorResponse = new BaseResponse<>(

@@ -1,7 +1,10 @@
 package com.company.artistmgmt.security;
 
-import com.company.artistmgmt.model.User;
+import com.company.artistmgmt.model.BaseResponse;
 import com.company.artistmgmt.service.UserLoadServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletContext;
@@ -10,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +25,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 
 @Component
@@ -32,11 +37,11 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Autowired
     private UserLoadServiceImpl userLoadService;
 
-    private final String HEADER = "Authorization";
-    private final String PREFIX = "Bearer ";
+    private static final String HEADER = "Authorization";
+    private static final String PREFIX = "Bearer ";
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,  HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         ServletContext servletContext = request.getServletContext();
         WebApplicationContext webApplicationContext = WebApplicationContextUtils.getWebApplicationContext(servletContext);
@@ -64,7 +69,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                         .toList();
                 logger.info("Extracted roles: " + authorities);
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                        (User) userDetails, null, authorities);
+                        userDetails, null, authorities);
 
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
