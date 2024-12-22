@@ -21,4 +21,5 @@ public interface UserRepo {
     long countTotalUsers() throws ArtistException;
 
     User findUserByEmail(String email) throws ArtistException;
+    User findUserByPhone(String email) throws ArtistException;
 }

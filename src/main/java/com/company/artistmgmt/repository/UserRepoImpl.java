@@ -200,6 +200,19 @@ public class UserRepoImpl implements UserRepo {
             throw new ArtistException("Error while find user by email."+ e.getMessage(), e);
         }
     }
+@Override
+    public User findUserByPhone(String phone) throws ArtistException {
+        logger.debug("Find user by phone:{}", phone);
+        var query = SELECT + USER_FETCH_COLUMN_QUERY + FROM + USER_TABLE + WHERE + "a.phone = ?";
+        try (var connection = dataSource.getConnection();
+             var statement = connection.prepareStatement(query)) {
+            logger.debug(QueryConst.QUERY, query);
+            statement.setString(1, phone);
+            return resultSet.getResult(statement.executeQuery(), this::extractUserInfo);
+        } catch (SQLException e) {
+            throw new ArtistException("Error while find user by phone."+ e.getMessage(), e);
+        }
+    }
 
     private User extractUserInfo(ResultSet resultSet) {
         try {

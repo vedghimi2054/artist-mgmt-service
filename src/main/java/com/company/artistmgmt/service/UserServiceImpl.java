@@ -48,6 +48,11 @@ public class UserServiceImpl implements UserService {
         if (userByEmail != null) {
             throw new FailedException("Email " + email + " already taken. Please choose a different email.");
         }
+        var phone= userReqDto.getPhone();
+        User userByPhone = userRepository.findUserByPhone(phone);
+        if (userByPhone != null) {
+            throw new FailedException("Phone " + phone + " already taken. Please choose a different phone.");
+        }
         userEntity.setEmail(email);
         userEntity.setPassword(bCryptPasswordEncoder.encode(userReqDto.getPassword()));
         User user = userRepository.createUser(userEntity);

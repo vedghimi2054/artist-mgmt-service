@@ -1,6 +1,5 @@
 package com.company.artistmgmt.model;
 
-import com.company.artistmgmt.helper.JsonHelper;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
@@ -16,6 +15,7 @@ public class BaseResponse<T> {
     private String message;
     private LocalDateTime timestamp;
     private boolean error;
+
     private T dataResponse;
     private Map<String, Object> meta;
 
@@ -55,9 +55,4 @@ public class BaseResponse<T> {
         }
         this.meta.put(key, value);
     }
-
-//    @Override
-//    public String toString() {
-//        return JsonHelper.serialize(this);
-//    }
 }

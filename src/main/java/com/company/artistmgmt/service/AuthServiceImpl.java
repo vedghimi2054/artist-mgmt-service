@@ -5,11 +5,13 @@ import com.company.artistmgmt.dto.LoginTokenDto;
 import com.company.artistmgmt.exception.ArtistException;
 import com.company.artistmgmt.exception.NotAllowedException;
 import com.company.artistmgmt.exception.ResourceNotFoundException;
+import com.company.artistmgmt.exception.ValidationException;
 import com.company.artistmgmt.helper.JsonHelper;
 import com.company.artistmgmt.model.BaseResponse;
 import com.company.artistmgmt.model.User;
 import com.company.artistmgmt.repository.UserRepo;
 import com.company.artistmgmt.security.JwtUtil;
+import com.company.artistmgmt.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -33,6 +35,19 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public BaseResponse<LoginTokenDto> login(LoginReqDto loginReqDto, HttpServletRequest request) throws ArtistException {
         logger.debug("Login payload:{}", JsonHelper.serialize(loginReqDto));
+        var email = loginReqDto.getEmail();
+        var password = loginReqDto.getPassword();
+
+        if (StringUtils.isBlank(email)) {
+            throw new ValidationException("Email is required.");
+        }
+        if (StringUtils.isBlank(password)) {
+            throw new ValidationException("Password is required.");
+        }
+        if (StringUtils.isNotBlank(email) && (StringUtils.isValidEmail(email))) {
+            throw new ValidationException("Invalid email format.");
+        }
+
         User user = userRepository.findUserByEmail(loginReqDto.getEmail());
         if (user == null) {
             throw new ResourceNotFoundException("User not found");

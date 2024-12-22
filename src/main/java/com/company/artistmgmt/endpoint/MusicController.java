@@ -58,7 +58,7 @@ public class MusicController {
      * @return the created music
      */
     @PostMapping("/artist/{artistId}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ARTIST')")
+//    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ARTIST')")
     public ResponseEntity<BaseResponse<MusicDto>> createSongForArtist(
             @PathVariable int artistId, @Valid @RequestBody MusicDto musicDto) {
         try {

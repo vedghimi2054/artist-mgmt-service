@@ -16,7 +16,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/user")
 @Validated
 @RequiredArgsConstructor
 public class UserController {
@@ -31,7 +31,7 @@ public class UserController {
      * @param pageSize the number of records per page (default: 10)
      * @return paginated list of users
      */
-    @GetMapping
+    @GetMapping("/list")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     public ResponseEntity<BaseResponse<List<UserResDto>>> listUsers(
             @RequestParam(defaultValue = "0") int pageNo,

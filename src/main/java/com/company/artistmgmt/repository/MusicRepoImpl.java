@@ -118,7 +118,7 @@ public class MusicRepoImpl implements MusicRepo {
     @Override
     public Music getSongById(int id, int artistId) throws ArtistException {
         logger.debug("Getting song by id:{} and artistId:{}", id, artistId);
-        String query = "SELECT * FROM music WHERE id = ? AND artist_id = ?";
+        String query = "SELECT * FROM music as m WHERE m.id = ? AND m.artist_id = ?";
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
