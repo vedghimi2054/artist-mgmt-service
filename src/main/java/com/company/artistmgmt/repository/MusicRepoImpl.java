@@ -146,6 +146,19 @@ public class MusicRepoImpl implements MusicRepo {
     }
 
     @Override
+    public long countAllSongs() throws ArtistException {
+        logger.debug("Count all Songs");
+        var query = SELECT + "COUNT(id)" + FROM + MUSIC_TABLE;
+        try (var connection = dataSource.getConnection();
+             var statement = connection.prepareStatement(query)) {
+            logger.debug(QueryConst.QUERY, query);
+            return resultSet.count(statement.executeQuery());
+        } catch (SQLException e) {
+            throw new ArtistException("Error while count all songs.", e);
+        }
+    }
+
+    @Override
     public boolean checkMusicExistsById(int id, int artistId) throws ArtistException {
         logger.debug("Checking music exists with id:{} for artistId:{}", id, artistId);
         String query = "SELECT COUNT(id) FROM music WHERE id = ? AND artist_id = ?";

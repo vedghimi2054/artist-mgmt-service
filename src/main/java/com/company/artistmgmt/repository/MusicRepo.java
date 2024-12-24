@@ -19,4 +19,5 @@ public interface MusicRepo {
     Music getSongById(int id, int artistId) throws ArtistException;
 
     long countSongsByArtist(int artistId) throws ArtistException;
+    long countAllSongs() throws ArtistException;
 }

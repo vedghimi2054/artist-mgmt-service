@@ -24,6 +24,7 @@ import java.io.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.company.artistmgmt.constant.AppConstant.DOMAIN_NAME;
 import static com.company.artistmgmt.mapper.ArtistMapper.toArtistDto;
 import static com.company.artistmgmt.mapper.ArtistMapper.toArtistEntity;
 import static com.company.artistmgmt.repository.QueryConst.*;
@@ -121,35 +122,6 @@ public class ArtistServiceImpl implements ArtistService {
     }
 
     @Override
-    public void exportArtistsToCsv(String filePath) throws ArtistException {
-        logger.debug("Getting all artists.");
-        var artists = artistRepo.getAllArtists(0, 10);
-        try (Writer writer = new FileWriter(filePath);
-             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(
-                     "ID", "Name", "DOB", "Gender", "Address", "First Release Year", "No of Albums Released"))) {
-
-            // Write artist data rows
-            for (Artist artist : artists) {
-                csvPrinter.printRecord(
-                        artist.getId(),
-                        artist.getName(),
-                        artist.getDob(),
-                        artist.getGender().toString(),
-                        artist.getAddress(),
-                        artist.getFirstReleaseYear(),
-                        artist.getNoOfAlbumsReleased()
-                );
-            }
-
-            // Ensure data is written to the file
-            csvPrinter.flush();
-
-        } catch (IOException e) {
-            throw new ArtistException("Failed to export CSV file", e);
-        }
-    }
-
-    @Override
     public BaseResponse<ArtistDto> importArtistsFromCsv(MultipartFile file) throws ArtistException {
         logger.debug("Importing artists from CSV.");
 
@@ -185,6 +157,30 @@ public class ArtistServiceImpl implements ArtistService {
 
         return null;
 
+    }
+
+    @Override
+    public String generateArtistsCsvContent(List<Artist> artists) throws IOException {
+        try (StringWriter writer = new StringWriter();
+             CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader(
+                     "ID", "Name", "DOB", "Gender", "Address", "First Release Year", "No of Albums Released"))) {
+
+            // Write artist data rows
+            for (Artist artist : artists) {
+                csvPrinter.printRecord(
+                        artist.getId(),
+                        artist.getName(),
+                        artist.getDob(),
+                        artist.getGender().toString(),
+                        artist.getAddress(),
+                        artist.getFirstReleaseYear(),
+                        artist.getNoOfAlbumsReleased()
+                );
+            }
+
+            csvPrinter.flush();
+            return writer.toString();
+        }
     }
 
     private static Artist extractArtistRecord(CSVRecord record) {

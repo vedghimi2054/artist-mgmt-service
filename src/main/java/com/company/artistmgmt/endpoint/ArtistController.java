@@ -3,17 +3,20 @@ package com.company.artistmgmt.endpoint;
 
 import com.company.artistmgmt.dto.ArtistDto;
 import com.company.artistmgmt.exception.ArtistException;
+import com.company.artistmgmt.model.Artist;
 import com.company.artistmgmt.model.BaseResponse;
+import com.company.artistmgmt.repository.ArtistRepo;
 import com.company.artistmgmt.service.ArtistService;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -22,15 +25,17 @@ import java.util.List;
 public class ArtistController {
 
     private final ArtistService artistService;
+    private final ArtistRepo artistRepo;
 
-    public ArtistController(ArtistService artistService) {
+    public ArtistController(ArtistService artistService, ArtistRepo artistRepo) {
         this.artistService = artistService;
+        this.artistRepo = artistRepo;
     }
 
     /**
      * List all artists with pagination. Accessible to SUPER_ADMIN and ARTIST_MANAGER.
      *
-     * @param page   the page number (default: 0)
+     * @param page     the page number (default: 0)
      * @param pageSize the number of records per page (default: 10)
      * @return paginated list of artists
      */
@@ -138,38 +143,31 @@ public class ArtistController {
         }
     }
 
-    // Export artists to CSV
     @GetMapping("/export")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','ARTIST_MANAGER')")
-    public ResponseEntity<BaseResponse<Object>> exportToCsv() {
-        String fileName = "artists.csv";
-        String filePath = "src/main/resources/static/csv/" + fileName; // Save in static/csv
-
+    public ResponseEntity<byte[]> exportArtistsToCsv(@RequestParam(defaultValue = "1") int page,
+                                                     @RequestParam(defaultValue = "10") int pageSize) {
         try {
-            // Export artists to CSV
-            artistService.exportArtistsToCsv(filePath);
+            // Fetch artists data
 
-            // Dynamically build the file URL
-            String fileUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path("/csv/")
-                    .path(fileName)
-                    .toUriString();
+            var offSet = (pageSize * page) - pageSize;
+            List<Artist> artists = artistRepo.getAllArtists(pageSize, offSet);
 
-            // Return success response with the file URL
-            BaseResponse<Object> response = new BaseResponse<>(
-                    true,
-                    "CSV exported successfully."
-            );
-            response.addMeta("fileURL", fileUrl);
+            // Generate CSV content
+            String csvContent = artistService.generateArtistsCsvContent(artists);
 
-            return ResponseEntity.ok(response);
+            // Set response headers for CSV file download
+            HttpHeaders responseHeaders = new HttpHeaders();
+            responseHeaders.add("Content-Type", "text/csv");
+            responseHeaders.add("Content-Disposition", "attachment; filename=artists.csv");
+
+            return new ResponseEntity<>(csvContent.getBytes("ISO8859-15"), responseHeaders, HttpStatus.OK);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(("Failed to generate CSV: " + e.getMessage()).getBytes());
         } catch (ArtistException ex) {
-            // Return error response
-            BaseResponse<Object> errorResponse = new BaseResponse<>(
-                    HttpStatus.BAD_REQUEST.value(),
-                    ex.getMessage()
-            );
-            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(("Error fetching artists: " + ex.getMessage()).getBytes());
         }
     }
 

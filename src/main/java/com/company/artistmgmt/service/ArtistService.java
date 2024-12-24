@@ -2,9 +2,11 @@ package com.company.artistmgmt.service;
 
 import com.company.artistmgmt.dto.ArtistDto;
 import com.company.artistmgmt.exception.ArtistException;
+import com.company.artistmgmt.model.Artist;
 import com.company.artistmgmt.model.BaseResponse;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface ArtistService {
@@ -48,7 +50,7 @@ public interface ArtistService {
      */
     BaseResponse<Integer> deleteArtist(int id) throws ArtistException;
 
-    void exportArtistsToCsv(String filePath) throws ArtistException;
-
     BaseResponse<ArtistDto> importArtistsFromCsv(MultipartFile file) throws ArtistException;
+
+    String generateArtistsCsvContent(List<Artist> artists) throws IOException;
 }
