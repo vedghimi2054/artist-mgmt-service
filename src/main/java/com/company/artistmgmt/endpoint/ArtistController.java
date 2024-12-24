@@ -30,17 +30,17 @@ public class ArtistController {
     /**
      * List all artists with pagination. Accessible to SUPER_ADMIN and ARTIST_MANAGER.
      *
-     * @param pageNo   the page number (default: 0)
+     * @param page   the page number (default: 0)
      * @param pageSize the number of records per page (default: 10)
      * @return paginated list of artists
      */
     @GetMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ARTIST_MANAGER')")
     public ResponseEntity<BaseResponse<List<ArtistDto>>> listArtists(
-            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize) {
         try {
-            BaseResponse<List<ArtistDto>> artists = artistService.getAllArtists(pageNo, pageSize);
+            BaseResponse<List<ArtistDto>> artists = artistService.getAllArtists(page, pageSize);
             return ResponseEntity.ok(artists);
         } catch (ArtistException ex) {
             BaseResponse<List<ArtistDto>> errorResponse = new BaseResponse<>(

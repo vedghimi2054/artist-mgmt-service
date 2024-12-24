@@ -1,20 +1,15 @@
 package com.company.artistmgmt.service;
 
-import com.company.artistmgmt.dto.LoginReqDto;
-import com.company.artistmgmt.dto.LoginTokenDto;
 import com.company.artistmgmt.dto.UserReqDto;
 import com.company.artistmgmt.dto.UserResDto;
 import com.company.artistmgmt.exception.*;
-import com.company.artistmgmt.helper.JsonHelper;
 import com.company.artistmgmt.mapper.UserStructMapper;
 import com.company.artistmgmt.model.BaseResponse;
 import com.company.artistmgmt.model.User;
 import com.company.artistmgmt.model.general.Gender;
 import com.company.artistmgmt.model.general.Role;
 import com.company.artistmgmt.repository.UserRepo;
-import com.company.artistmgmt.security.JwtUtil;
 import com.company.artistmgmt.util.UserUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +17,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -111,7 +105,7 @@ public class UserServiceImpl implements UserService {
             throw new ValidationException("pageNo must be >= 0 and pageSize must be > 0");
         }
         // Calculate offset
-        int offset = pageNo * pageSize;
+        int offset = (pageSize * pageNo) - pageSize;
         List<User> allUsers = userRepository.getAllUsers(pageSize, offset);
         long totalCount = userRepository.countTotalUsers();
         List<UserResDto> userDtoList = allUsers.stream().map(userMapper::toDto).collect(Collectors.toList());

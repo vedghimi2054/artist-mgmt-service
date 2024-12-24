@@ -35,7 +35,7 @@ public class MusicController {
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ARTIST_MANAGER')")
     public ResponseEntity<BaseResponse<List<MusicDto>>> listSongsForArtist(
             @PathVariable int artistId,
-            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "1") int pageNo,
             @RequestParam(defaultValue = "10") int pageSize) {
         try {
             BaseResponse<List<MusicDto>> songs = musicService.getSongsByArtist(artistId, pageNo, pageSize);

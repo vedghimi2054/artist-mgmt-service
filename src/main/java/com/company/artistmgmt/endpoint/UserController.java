@@ -34,7 +34,7 @@ public class UserController {
     @GetMapping("/list")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     public ResponseEntity<BaseResponse<List<UserResDto>>> listUsers(
-            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "1") int pageNo,
             @RequestParam(defaultValue = "10") int pageSize) {
         try {
             BaseResponse<List<UserResDto>> users = userService.getAllUsers(pageNo, pageSize);

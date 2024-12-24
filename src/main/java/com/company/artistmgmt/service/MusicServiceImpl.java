@@ -42,7 +42,7 @@ public class MusicServiceImpl implements MusicService {
             throw new ValidationException("pageNo must be >= 0 and pageSize must be > 0");
         }
         // Calculate offset
-        int offset = pageNo * pageSize;
+        int offset = (pageSize * pageNo) - pageSize;
         if (artistRepo.checkArtistExistsById(artistId)) {
             throw new ResourceNotFoundException("Artist ID " + artistId + " not found.");
         }

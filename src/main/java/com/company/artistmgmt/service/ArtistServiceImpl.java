@@ -78,7 +78,7 @@ public class ArtistServiceImpl implements ArtistService {
             throw new ValidationException("pageNo must be >= 0 and pageSize must be > 0");
         }
         // Calculate offset
-        int offset = pageNo * pageSize;
+        int offset = (pageSize * pageNo) - pageSize;
         List<Artist> allArtists = artistRepo.getAllArtists(pageSize, offset);
         long totalCount = artistRepo.getArtistCount(); // Get total count
         List<ArtistDto> artistDtos = allArtists.stream()
