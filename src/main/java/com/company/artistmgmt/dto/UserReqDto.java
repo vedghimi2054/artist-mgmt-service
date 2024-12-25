@@ -4,7 +4,7 @@ import com.company.artistmgmt.model.general.Gender;
 import com.company.artistmgmt.model.general.Role;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 @Data
 public class UserReqDto {
@@ -12,7 +12,7 @@ public class UserReqDto {
     private String lastName;
     private String email;
     private String phone;
-    private LocalDateTime dob;
+    private Timestamp dob;
     private Gender gender;
     private String address;
     private Role role;

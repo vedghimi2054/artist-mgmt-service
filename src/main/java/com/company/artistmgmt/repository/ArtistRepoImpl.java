@@ -45,8 +45,7 @@ public class ArtistRepoImpl implements ArtistRepo {
 
             var i = 0;
             statement.setString(++i, artistEntity.getName());
-            statement.setTimestamp(++i, artistEntity.getDob() != null ?
-                    Timestamp.valueOf(artistEntity.getDob()) : null);
+            statement.setTimestamp(++i, artistEntity.getDob());
             statement.setInt(++i, artistEntity.getGender() != null ? artistEntity.getGender().getValue() : 0);
             statement.setString(++i, artistEntity.getAddress());
             statement.setInt(++i, artistEntity.getFirstReleaseYear());
@@ -98,8 +97,7 @@ public class ArtistRepoImpl implements ArtistRepo {
 
             int i = 0;
             statement.setString(++i, artistEntity.getName());
-            statement.setTimestamp(++i, artistEntity.getDob() != null ?
-                    Timestamp.valueOf(artistEntity.getDob()) : null);
+            statement.setTimestamp(++i, artistEntity.getDob());
             statement.setInt(++i, artistEntity.getGender() != null ? artistEntity.getGender().getValue() : 0);
             statement.setString(++i, artistEntity.getAddress());
             statement.setInt(++i, artistEntity.getFirstReleaseYear());
@@ -186,7 +184,7 @@ public class ArtistRepoImpl implements ArtistRepo {
             artist.setName(StringUtils.getNotNullString(resultSet.getString("name")));
             Timestamp dobTimestamp = resultSet.getTimestamp("dob");
             if (dobTimestamp != null) {
-                artist.setDob(dobTimestamp.toLocalDateTime());
+                artist.setDob(dobTimestamp);
             }
             int genderValue = resultSet.getInt("gender");
             if (!resultSet.wasNull()) {
@@ -198,11 +196,11 @@ public class ArtistRepoImpl implements ArtistRepo {
             artist.setNoOfAlbumsReleased(resultSet.getInt("no_of_albums_released"));
             Timestamp createdAt = resultSet.getTimestamp("created_at");
             if (createdAt != null) {
-                artist.setCreatedAt(createdAt.toLocalDateTime());
+                artist.setCreatedAt(createdAt);
             }
             Timestamp updatedAt = resultSet.getTimestamp("updated_at");
             if (updatedAt != null) {
-                artist.setUpdatedAt(updatedAt.toLocalDateTime());
+                artist.setUpdatedAt(updatedAt);
             }
 
             return artist;

@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.math.NumberUtils;
 
+import java.sql.Timestamp;
 import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -13,7 +14,7 @@ import java.time.format.DateTimeFormatter;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Slf4j
 public class ImportArtistUtils {
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public static int parseNumber(String id) {
         id = getValidteString(id);
@@ -23,11 +24,11 @@ public class ImportArtistUtils {
         return 0;
     }
 
-    public static LocalDateTime parseDOB(String dob) {
+    public static Timestamp parseDOB(String dob) {
         try {
             dob = getValidteString(dob);
-            return LocalDateTime.parse(dob, DATE_TIME_FORMATTER);
-        } catch (DateTimeException ex) {
+            LocalDateTime localDateTime = LocalDateTime.parse(dob, DATE_TIME_FORMATTER);
+            return Timestamp.valueOf(localDateTime);        } catch (DateTimeException ex) {
             log.error("Error while parsing date.{}", dob);
             return null;
         }

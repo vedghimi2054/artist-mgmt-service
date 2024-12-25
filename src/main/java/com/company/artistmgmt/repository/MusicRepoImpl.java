@@ -185,11 +185,11 @@ public class MusicRepoImpl implements MusicRepo {
             music.setGenre(Genre.fromValue(genre));
             Timestamp createdAt = resultSet.getTimestamp("m.created_at");
             if (createdAt != null) {
-                music.setCreatedAt(createdAt.toLocalDateTime());
+                music.setCreatedAt(createdAt);
             }
             Timestamp updatedAt = resultSet.getTimestamp("m.updated_at");
             if (updatedAt != null) {
-                music.setUpdatedAt(updatedAt.toLocalDateTime());
+                music.setUpdatedAt(updatedAt);
             }
 
             return music;

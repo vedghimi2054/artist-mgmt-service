@@ -65,8 +65,7 @@ public class UserRepoImpl implements UserRepo {
             statement.setString(++i, userEntity.getEmail());
             statement.setString(++i, userEntity.getPassword());
             statement.setString(++i, userEntity.getPhone());
-            statement.setTimestamp(++i, userEntity.getDob() != null ?
-                    Timestamp.valueOf(userEntity.getDob()) : null);
+            statement.setTimestamp(++i, userEntity.getDob());
             statement.setInt(++i, userEntity.getGender().getValue());
             statement.setString(++i, userEntity.getAddress());
             statement.setInt(++i, userEntity.getRole().getValue());
@@ -120,8 +119,7 @@ public class UserRepoImpl implements UserRepo {
             statement.setString(++i, useEntity.getLastName());
             statement.setString(++i, useEntity.getEmail());
             statement.setString(++i, useEntity.getPhone());
-            statement.setTimestamp(++i, useEntity.getDob() != null ?
-                    Timestamp.valueOf(useEntity.getDob()) : null);
+            statement.setTimestamp(++i, useEntity.getDob());
             statement.setInt(++i, useEntity.getGender() != null ?
                     useEntity.getGender().getValue() : 0);
             statement.setString(++i, useEntity.getAddress());
@@ -226,7 +224,7 @@ public class UserRepoImpl implements UserRepo {
             // Map timestamp to LocalDateTime for dob
             Timestamp dobTimestamp = resultSet.getTimestamp("dob");
             if (dobTimestamp != null) {
-                user.setDob(dobTimestamp.toLocalDateTime());
+                user.setDob(dobTimestamp);
             }
             // Map gender if present (assuming Gender is an enum)
             int genderValue = resultSet.getInt("gender");
@@ -242,11 +240,11 @@ public class UserRepoImpl implements UserRepo {
             // Map timestamps to LocalDateTime
             Timestamp createdAt = resultSet.getTimestamp("created_at");
             if (createdAt != null) {
-                user.setCreatedAt(createdAt.toLocalDateTime());
+                user.setCreatedAt(createdAt);
             }
             Timestamp updatedAt = resultSet.getTimestamp("updated_at");
             if (updatedAt != null) {
-                user.setUpdatedAt(updatedAt.toLocalDateTime());
+                user.setUpdatedAt(updatedAt);
             }
             return user;
         } catch (Exception ex) {
