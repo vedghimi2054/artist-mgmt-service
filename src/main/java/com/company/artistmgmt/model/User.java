@@ -7,6 +7,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -55,6 +56,16 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return UserDetails.super.isEnabled();
+    }
+
+    private String formattedDob;
+
+    public String getFormattedDob() {
+        if (dob == null) {
+            return null;
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy");
+        return dob.format(formatter);
     }
 }
 

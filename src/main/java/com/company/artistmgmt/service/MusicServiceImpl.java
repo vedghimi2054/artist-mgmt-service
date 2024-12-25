@@ -8,6 +8,7 @@ import com.company.artistmgmt.exception.ValidationException;
 import com.company.artistmgmt.mapper.MusicMapper;
 import com.company.artistmgmt.model.BaseResponse;
 import com.company.artistmgmt.model.Music;
+import com.company.artistmgmt.model.general.Genre;
 import com.company.artistmgmt.repository.ArtistRepo;
 import com.company.artistmgmt.repository.MusicRepo;
 import org.slf4j.Logger;
@@ -60,6 +61,7 @@ public class MusicServiceImpl implements MusicService {
     @Override
     public BaseResponse<MusicDto> createSongForArtist(int artistId, MusicDto musicDto) throws ArtistException {
         logger.debug("Creating songs for artist id:{} with: Payload:{}", artistId, musicDto);
+        validateSongsForArtistReq(musicDto, artistId);
         Music musicEntity = toMusicEntity(musicDto);
         if (artistRepo.checkArtistExistsById(artistId)) {
             throw new ResourceNotFoundException("Artist ID " + artistId + " not found for artist.");
@@ -71,9 +73,19 @@ public class MusicServiceImpl implements MusicService {
         return new BaseResponse<>(true, updatedDTo);
     }
 
+    private void validateSongsForArtistReq(MusicDto musicDto, int artistId) {
+        if (artistId <= 0) {
+            throw new ValidationException("Invalid artist id.");
+        }
+        if (musicDto.getGenre() != null && musicDto.getGenre() == Genre.GENRE_UNSPECIFIED) {
+            throw new ValidationException("Invalid Genre.");
+        }
+    }
+
     @Override
     public BaseResponse<MusicDto> updateSongForArtist(int artistId, int id, MusicDto musicDto) throws ArtistException {
         logger.debug("Updating songs for artist id:{} and musicId:{} with: Payload:{}", artistId, id, musicDto);
+        validateSongsForArtistReq(musicDto, artistId);
         Music musicEntity = toMusicEntity(musicDto);
         if (musicRepo.checkMusicExistsById(id, artistId)) {
             throw new ResourceNotFoundException("Music with ID " + id + " not found for artist.");

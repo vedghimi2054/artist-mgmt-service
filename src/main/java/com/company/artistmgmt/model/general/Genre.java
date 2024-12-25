@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum Genre {
+    GENRE_UNSPECIFIED(0),
     MB(1),
     COUNTRY(2),
     CLASSIC(3),

@@ -4,7 +4,7 @@ public abstract class AppConstant {
     private AppConstant() {
 
     }
-    public static final long TOKEN_EXPIRATION_TIME = 60 * 60 * 100; // 20 minutes in milliseconds
+    public static final long TOKEN_EXPIRATION_TIME = 60 * 60 * 1000; // 20 minutes in milliseconds
 
     public static final String DOMAIN_NAME= "http://localhost:8080";
 

@@ -173,14 +173,14 @@ public class ArtistController {
 
     @PostMapping("/import")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','ARTIST_MANAGER')")
-    public ResponseEntity<BaseResponse<ArtistDto>> importArtistFromCsv(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<BaseResponse<List<ArtistDto>>> importArtistFromCsv(@RequestParam("file") MultipartFile file) {
         try {
             // Process the CSV file and save to the database
-            BaseResponse<ArtistDto> artistDtoBaseResponse = artistService.importArtistsFromCsv(file);
+            BaseResponse<List<ArtistDto>> artistDtoBaseResponse = artistService.importArtistsFromCsv(file);
             // Return success response
             return ResponseEntity.ok(artistDtoBaseResponse);
         } catch (ArtistException e) {
-            BaseResponse<ArtistDto> errorResponse = new BaseResponse<>(
+            BaseResponse<List<ArtistDto>> errorResponse = new BaseResponse<>(
                     HttpStatus.BAD_REQUEST.value(),
                     e.getMessage()
             );

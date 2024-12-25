@@ -11,6 +11,7 @@ import com.company.artistmgmt.model.BaseResponse;
 import com.company.artistmgmt.model.general.Gender;
 import com.company.artistmgmt.repository.ArtistRepo;
 import com.company.artistmgmt.util.ImportArtistUtils;
+import com.google.common.collect.Lists;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
@@ -24,7 +25,6 @@ import java.io.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.company.artistmgmt.constant.AppConstant.DOMAIN_NAME;
 import static com.company.artistmgmt.mapper.ArtistMapper.toArtistDto;
 import static com.company.artistmgmt.mapper.ArtistMapper.toArtistEntity;
 import static com.company.artistmgmt.repository.QueryConst.*;
@@ -122,9 +122,10 @@ public class ArtistServiceImpl implements ArtistService {
     }
 
     @Override
-    public BaseResponse<ArtistDto> importArtistsFromCsv(MultipartFile file) throws ArtistException {
+    public BaseResponse<List<ArtistDto>> importArtistsFromCsv(MultipartFile file) throws ArtistException {
         logger.debug("Importing artists from CSV.");
 
+        List<ArtistDto> artistDtoList = Lists.newArrayList();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
              CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader()
                      .withQuote('"')  // Handle quoted values properly
@@ -146,7 +147,8 @@ public class ArtistServiceImpl implements ArtistService {
                 Artist createdArtist = artistRepo.createArtist(artist);
                 Artist artistById = artistRepo.getArtistById(createdArtist.getId());
                 ArtistDto dto = toArtistDto(artistById);
-                return new BaseResponse<>(true, dto);
+                artistDtoList.add(dto);
+                return new BaseResponse<>(true, artistDtoList);
             }
 
         } catch (IOException e) {
@@ -232,8 +234,9 @@ public class ArtistServiceImpl implements ArtistService {
         if (artistDto.getNoOfAlbumsReleased() < 0) {
             throw new ValidationException("Number of albums released cannot be negative.");
         }
-        if (artistDto.getGender() != null && Gender.isValid(artistDto.getGender().name())) {
+        if (artistDto.getGender() != null && artistDto.getGender() == Gender.GENDER_UNSPECIFIED) {
             throw new ValidationException("Invalid gender value");
+
         }
     }
 }

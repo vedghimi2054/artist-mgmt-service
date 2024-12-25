@@ -50,7 +50,7 @@ public interface ArtistService {
      */
     BaseResponse<Integer> deleteArtist(int id) throws ArtistException;
 
-    BaseResponse<ArtistDto> importArtistsFromCsv(MultipartFile file) throws ArtistException;
+    BaseResponse<List<ArtistDto>> importArtistsFromCsv(MultipartFile file) throws ArtistException;
 
     String generateArtistsCsvContent(List<Artist> artists) throws IOException;
 }

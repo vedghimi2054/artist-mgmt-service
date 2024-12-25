@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
         if (userByEmail != null) {
             throw new FailedException("Email " + email + " already taken. Please choose a different email.");
         }
-        var phone= userReqDto.getPhone();
+        var phone = userReqDto.getPhone();
         User userByPhone = userRepository.findUserByPhone(phone);
         if (userByPhone != null) {
             throw new FailedException("Phone " + phone + " already taken. Please choose a different phone.");
@@ -157,10 +157,16 @@ public class UserServiceImpl implements UserService {
             throw new ValidationException("Phone number must be 10 digits");
         }
 
-        if (userReqDto.getRole() == null || !Role.isValid(userReqDto.getRole().name())) {
+        if (userReqDto.getRole() != null && userReqDto.getRole() == Role.ROLE_UNSPECIFIED) {
             throw new ValidationException("Invalid role value");
         }
 
+        if (userReqDto.getRole() == null || !Role.isValid(userReqDto.getRole().name())) {
+            throw new ValidationException("Invalid role value");
+        }
+        if (userReqDto.getGender() != null && userReqDto.getGender() == Gender.GENDER_UNSPECIFIED) {
+            throw new ValidationException("Invalid gender value");
+        }
         if (userReqDto.getGender() != null && Gender.isValid(userReqDto.getGender().name())) {
             throw new ValidationException("Invalid gender value");
         }

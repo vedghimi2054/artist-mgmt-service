@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @Getter
 public enum Role implements GrantedAuthority {
+    ROLE_UNSPECIFIED(0),
     SUPER_ADMIN(1),
     ARTIST_MANAGER(2),
     ARTIST(3);
