@@ -148,16 +148,15 @@ public class ArtistServiceImpl implements ArtistService {
                 Artist artistById = artistRepo.getArtistById(createdArtist.getId());
                 ArtistDto dto = toArtistDto(artistById);
                 artistDtoList.add(dto);
-                return new BaseResponse<>(true, artistDtoList);
             }
+            return new BaseResponse<>(true, artistDtoList);
+
 
         } catch (IOException e) {
             throw new ArtistException("Failed to process the CSV file." + e.getMessage(), e);
         } catch (Exception e) {
             throw new ArtistException("Invalid data format in the CSV file." + e.getMessage(), e);
         }
-
-        return null;
 
     }
 

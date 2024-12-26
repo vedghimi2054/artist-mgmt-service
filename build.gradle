@@ -49,6 +49,6 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-csv', version: '1.5'
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
-}
+//tasks.named('test') {
+//    useJUnitPlatform()
+//}
