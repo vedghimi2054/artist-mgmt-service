@@ -24,7 +24,7 @@ public class DashboardController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ARTIST_MANAGER')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'ARTIST_MANAGER','ARTIST')")
     public ResponseEntity<BaseResponse<List<Object>>> getAllDashboardStats() {
         try {
             BaseResponse<List<Object>> response = dashboardService.getAllDashboardStats();
