@@ -8,6 +8,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 
 import java.sql.Timestamp;
 import java.time.DateTimeException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -27,8 +28,10 @@ public class ImportArtistUtils {
     public static Timestamp parseDOB(String dob) {
         try {
             dob = getValidteString(dob);
-            LocalDateTime localDateTime = LocalDateTime.parse(dob, DATE_TIME_FORMATTER);
-            return Timestamp.valueOf(localDateTime);        } catch (DateTimeException ex) {
+            LocalDateTime localDateTime = LocalDate.parse(dob, DATE_TIME_FORMATTER).atStartOfDay();
+            return Timestamp.valueOf(localDateTime);
+        }
+        catch (DateTimeException ex) {
             log.error("Error while parsing date.{}", dob);
             return null;
         }
