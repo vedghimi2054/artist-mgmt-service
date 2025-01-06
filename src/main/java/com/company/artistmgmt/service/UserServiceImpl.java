@@ -68,6 +68,10 @@ public class UserServiceImpl implements UserService {
         userMapper.updateUserFromDto(userReqDto, existingUser);
         userMapper.updatePassword(existingUser, userReqDto.getPassword());
 
+        if (existingUser.getRole().getValue() == Role.SUPER_ADMIN.getValue()) {
+            throw new NotAllowedException("User don't have permission.");
+        }
+
         if (!existingUser.getRole().equals(userReqDto.getRole())) {
             if (!UserUtil.isSuperAdmin()) {
                 throw new NotAllowedException("Only super admin can update the role");

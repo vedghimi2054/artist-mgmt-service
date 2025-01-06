@@ -45,9 +45,9 @@ public class ImportArtistUtils {
     public static Gender parseGender(String gender) {
         gender = getValidteString(gender);
         return switch (gender) {
-            case "MALE" -> Gender.MALE;
-            case "FEMALE" -> Gender.FEMALE;
-            case "OTHER" -> Gender.OTHER;
+            case "MALE","1" -> Gender.MALE;
+            case "FEMALE","2" -> Gender.FEMALE;
+            case "OTHER","3" -> Gender.OTHER;
             default -> Gender.GENDER_UNSPECIFIED;
         };
     }
